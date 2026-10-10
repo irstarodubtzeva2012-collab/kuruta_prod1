@@ -9,6 +9,8 @@ import { APP_GUARD } from "@nestjs/core";
 import { z } from "zod";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
+import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
 
 // ─── Environment validation schema ──────────────────────────────
 const envSchema = z.object({
@@ -44,6 +46,10 @@ const envSchema = z.object({
         limit: 100,
       },
     ]),
+
+    // ─── Feature Modules ──────────────────────────────────────────
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [

@@ -2,13 +2,14 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "users", num: "01", title: "Пользователи" },
-  { id: "direction-a", num: "02", title: "Направление A" },
-  { id: "direction-b", num: "03", title: "Направление B" },
-  { id: "finance", num: "04", title: "Финансы" },
-  { id: "moderation", num: "05", title: "Модерация" },
-  { id: "system", num: "06", title: "Системные" },
-  { id: "indexes", num: "07", title: "Индексы" },
+  { id: "registration", num: "01", title: "Регистрация" },
+  { id: "login", num: "02", title: "Вход" },
+  { id: "jwt", num: "03", title: "JWT & Refresh" },
+  { id: "2fa", num: "04", title: "2FA (TOTP)" },
+  { id: "users", num: "05", title: "Профиль" },
+  { id: "guards", num: "06", title: "Guards" },
+  { id: "security", num: "07", title: "Безопасность" },
+  { id: "tests", num: "08", title: "Тесты" },
 ];
 
 function NavItem({ section, active, onClick }: { section: typeof sections[0]; active: boolean; onClick: () => void }) {
@@ -58,76 +59,44 @@ function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
   );
 }
 
-function ModelCard({ name, fields, relations, indexes, color }: { 
-  name: string; 
-  fields: string[]; 
-  relations?: string[];
-  indexes?: string[];
-  color: string;
-}) {
+function EndpointCard({ method, path, desc, auth }: { method: string; path: string; desc: string; auth?: boolean }) {
+  const methodColors: Record<string, string> = {
+    GET: "bg-[#2D9B6E]/10 text-[#2D9B6E]",
+    POST: "bg-[#6366F1]/10 text-[#6366F1]",
+    PUT: "bg-[#F59E0B]/10 text-[#F59E0B]",
+    DELETE: "bg-[#E63946]/10 text-[#E63946]",
+  };
+
   return (
-    <Card className="mb-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
-          <span className="text-lg font-bold" style={{ color }}>{name[0]}</span>
-        </div>
-        <div>
-          <h3 className="font-display font-semibold text-[#1A1A1A]">{name}</h3>
-          <p className="text-xs text-[#999]">{fields.length} полей</p>
-        </div>
-      </div>
-      
-      <div className="space-y-2 mb-4">
-        {fields.map((field) => (
-          <div key={field} className="flex items-center gap-2 text-sm">
-            <code className="font-mono text-xs text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded">{field}</code>
-          </div>
-        ))}
-      </div>
-
-      {relations && relations.length > 0 && (
-        <div className="pt-4 border-t border-[#E5E5E5]">
-          <p className="text-xs text-[#999] mb-2">Связи:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {relations.map((rel) => (
-              <span key={rel} className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] text-xs rounded font-mono">
-                {rel}
-              </span>
-            ))}
-          </div>
-        </div>
+    <div className="flex items-center gap-4 border border-[#E5E5E5] rounded-xl p-4">
+      <span className={`px-3 py-1 rounded-lg text-xs font-bold font-mono ${methodColors[method]}`}>
+        {method}
+      </span>
+      <code className="text-sm font-mono text-[#1A1A1A] flex-1">{path}</code>
+      {auth && (
+        <span className="px-2 py-1 bg-[#999]/10 text-[#999] text-xs rounded">
+          🔒 Auth
+        </span>
       )}
-
-      {indexes && indexes.length > 0 && (
-        <div className="pt-4 border-t border-[#E5E5E5]">
-          <p className="text-xs text-[#999] mb-2">Индексы:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {indexes.map((idx) => (
-              <span key={idx} className="px-2 py-1 bg-[#F59E0B]/10 text-[#F59E0B] text-xs rounded font-mono">
-                {idx}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </Card>
+      <span className="text-sm text-[#666]">{desc}</span>
+    </div>
   );
 }
 
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Схема базы данных" />
+      <SectionHeader num="00" title="Модуль аутентификации" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        PostgreSQL 16. Prisma ORM. 18 моделей. Баланс вычисляется через FinancialTransaction.
+        JWT + Refresh Token Rotation + TOTP 2FA + Rate Limiting. Реализовано согласно Конституции KURUTA.
       </p>
 
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Моделей", value: "18" },
-          { label: "Enum типов", value: "14" },
-          { label: "Связей", value: "25+" },
-          { label: "Индексов", value: "50+" },
+          { label: "Endpoints", value: "10" },
+          { label: "Guards", value: "3" },
+          { label: "Strategies", value: "2" },
+          { label: "E2E тестов", value: "12" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
@@ -136,25 +105,32 @@ function OverviewSection() {
         ))}
       </div>
 
-      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-2">⚠️ Критично: Финансовая модель</h4>
-        <ul className="text-sm text-[#444] space-y-1">
-          <li>• Баланс пользователя <strong>НЕ хранится</strong> как поле в User</li>
-          <li>• Баланс вычисляется через агрегацию FinancialTransaction</li>
-          <li>• Все операции в ACID-транзакциях</li>
-          <li>• Идемпотентность через idempotencyKey (unique)</li>
-          <li>• Double-entry: каждая транзакция имеет тип (debit/credit)</li>
+      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Ключевые особенности</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• <strong>Argon2id</strong> для хеширования паролей (НЕ bcrypt)</li>
+          <li>• <strong>JWT Access Token</strong> — 15 минут</li>
+          <li>• <strong>Refresh Token</strong> — 7 дней, ротируется при каждом использовании</li>
+          <li>• <strong>httpOnly Secure SameSite=Strict cookie</strong> (НЕ localStorage)</li>
+          <li>• <strong>При утечке</strong> — отзыв всей семьи токенов</li>
+          <li>• <strong>TOTP 2FA</strong> — обязателен для финансовых операций</li>
+          <li>• <strong>Rate Limiting</strong> — 5 попыток/мин на auth</li>
+          <li>• <strong>Audit Log</strong> — все события логируются</li>
         </ul>
       </Card>
 
       <div className="space-y-3">
         {[
-          { task: "Все обязательные сущности", status: "done" as const },
-          { task: "Decimal(14,2) для денег", status: "done" as const },
-          { task: "Индексы на FK и составные", status: "done" as const },
-          { task: "Cascade delete только где безопасно", status: "done" as const },
-          { task: "AuditLog append-only (нет updatedAt)", status: "done" as const },
-          { task: "FSM статусы из Конституции", status: "done" as const },
+          { task: "Регистрация с Argon2id", status: "done" as const },
+          { task: "Вход с валидацией", status: "done" as const },
+          { task: "JWT Access + Refresh токены", status: "done" as const },
+          { task: "Refresh token rotation", status: "done" as const },
+          { task: "При утечке — отзыв всех сессий", status: "done" as const },
+          { task: "TOTP 2FA (enable/verify/disable)", status: "done" as const },
+          { task: "CRUD профиля + загрузка аватара", status: "done" as const },
+          { task: "Guards: JwtAuth, Roles, RateLimit", status: "done" as const },
+          { task: "E2E тесты (register → login → refresh → me → logout)", status: "done" as const },
+          { task: "Тест ротации refresh токенов", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -173,66 +149,58 @@ function OverviewSection() {
   );
 }
 
-function UsersSection() {
+function RegistrationSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Пользователи и роли" />
-      <p className="text-[#444] mb-8">Единый аккаунт с возможностью совмещения ролей. Баланс привязан к userId.</p>
-
-      <ModelCard
-        name="User"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "email: string (unique)",
-          "phone: string? (unique)",
-          "passwordHash: string",
-          "status: UserStatus",
-          "totpSecret: string? (encrypted)",
-          "totpEnabled: boolean",
-          "createdAt, updatedAt",
-        ]}
-        relations={["profile", "roles", "ambassadorProfile", "platformOwnerProfile", "campaigns", "tasks", "adSlots", "deals", "transactions", "payouts"]}
-        indexes={["email", "phone", "status", "createdAt"]}
-      />
-
-      <ModelCard
-        name="UserProfile"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (unique, FK)",
-          "displayName: string?",
-          "avatarUrl: string?",
-          "bio: string?",
-          "country, city, timezone: string?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["user (Cascade)"]}
-        indexes={["userId"]}
-      />
-
-      <ModelCard
-        name="UserRoleAssignment"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (FK)",
-          "role: UserRole (enum)",
-          "grantedAt: datetime",
-          "grantedBy: string? (admin userId)",
-        ]}
-        relations={["user (Cascade)"]}
-        indexes={["userId", "role", "unique(userId, role)"]}
-      />
+      <SectionHeader num="01" title="Регистрация" />
+      
+      <EndpointCard method="POST" path="/api/v1/auth/register" desc="Регистрация нового пользователя" />
 
       <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Роли (enum UserRole)</h4>
-        <div className="flex flex-wrap gap-2">
-          {["guest", "creator", "ambassador", "platform_owner", "moderator", "finance", "admin", "superadmin"].map((role) => (
-            <code key={role} className="px-3 py-1.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded-lg text-xs font-mono text-[#1A1A1A]">
-              {role}
-            </code>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request Body</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "email": "user@example.com",
+  "password": "StrongPass123",
+  "displayName": "John Doe"
+}`}
+        </pre>
+      </Card>
+
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (201)</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "id": "uuid",
+  "email": "user@example.com",
+  "displayName": "John Doe"
+}`}
+        </pre>
+      </Card>
+
+      <Card className="mt-4 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">Валидация пароля</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Минимум 8 символов</li>
+          <li>• Максимум 128 символов</li>
+          <li>• Должен содержать: uppercase, lowercase, digit</li>
+          <li>• Хешируется через <code className="font-mono bg-white px-1.5 py-0.5 rounded">Argon2id</code></li>
+        </ul>
+      </Card>
+
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Argon2id параметры</h4>
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { param: "memoryCost", value: "65536", desc: "64 MB" },
+            { param: "timeCost", value: "3", desc: "iterations" },
+            { param: "parallelism", value: "4", desc: "threads" },
+          ].map((item) => (
+            <div key={item.param} className="border border-[#E5E5E5] rounded-lg p-3">
+              <code className="text-xs font-mono text-[#1A1A1A]">{item.param}</code>
+              <p className="text-2xl font-bold text-[#FF6B35] font-display mt-1">{item.value}</p>
+              <p className="text-xs text-[#999]">{item.desc}</p>
+            </div>
           ))}
         </div>
       </Card>
@@ -240,486 +208,375 @@ function UsersSection() {
   );
 }
 
-function DirectionASection() {
+function LoginSection() {
   return (
     <div>
-      <SectionHeader num="02" title="Направление A: Задания" />
-      <p className="text-[#444] mb-8">Креатор → Кампания → Задания → Амбассадоры выполняют → Проверка → Вознаграждение.</p>
+      <SectionHeader num="02" title="Вход" />
+      
+      <EndpointCard method="POST" path="/api/v1/auth/login" desc="Вход пользователя" />
 
-      <ModelCard
-        name="Campaign"
-        color="#FF6B35"
-        fields={[
-          "id: uuid (PK)",
-          "creatorId: string (FK)",
-          "title, description: string",
-          "status: CampaignStatus (FSM)",
-          "budget: Decimal(14,2)",
-          "taskCount: int",
-          "taskReward: Decimal(14,2)",
-          "requirements: jsonb?",
-          "targetAudience: jsonb?",
-          "startsAt, endsAt: datetime?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["creator (Restrict)", "tasks (Cascade)"]}
-        indexes={["creatorId", "status", "createdAt", "startsAt+endsAt"]}
-      />
+      <Card className="mt-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request Body</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "email": "user@example.com",
+  "password": "StrongPass123"
+}`}
+        </pre>
+      </Card>
 
-      <ModelCard
-        name="Task"
-        color="#FF6B35"
-        fields={[
-          "id: uuid (PK)",
-          "campaignId: string (FK)",
-          "ambassadorId: string? (FK)",
-          "status: TaskStatus (FSM)",
-          "title, description: string",
-          "requirements: jsonb?",
-          "proofData: jsonb?",
-          "reviewNotes: string?",
-          "reviewedBy: string?",
-          "takenAt, submittedAt, paidAt, dueAt: datetime?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["campaign (Cascade)", "ambassador (SetNull)"]}
-        indexes={["campaignId", "ambassadorId", "status", "createdAt", "dueAt", "campaignId+status"]}
-      />
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (200)</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "accessToken": "eyJhbGc...",
+  "user": {
+    "id": "uuid",
+    "email": "user@example.com",
+    "displayName": "John Doe",
+    "roles": ["creator"]
+  }
+}`}
+        </pre>
+      </Card>
 
-      <ModelCard
-        name="AmbassadorProfile"
-        color="#2D9B6E"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (unique, FK)",
-          "isVerified: boolean",
-          "socialLinks: jsonb?",
-          "audienceSize: int?",
-          "niches: string[]",
-          "languages: string[]",
-          "avgEngagement: Decimal(5,2)?",
-          "rating: Decimal(3,2)?",
-          "totalTasks, completedTasks: int",
-          "createdAt, updatedAt",
-        ]}
-        relations={["user (Cascade)", "verifications", "tasks"]}
-        indexes={["userId", "isVerified", "rating"]}
-      />
+      <Card className="mt-4 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">🔒 Security Headers</h4>
+        <pre className="text-sm font-mono text-[#444]">
+{`Set-Cookie: refreshToken=eyJhbGc...; 
+  HttpOnly; 
+  Secure; 
+  SameSite=Strict; 
+  Max-Age=604800`}
+        </pre>
+      </Card>
 
-      <ModelCard
-        name="AmbassadorVerificationRequest"
-        color="#2D9B6E"
-        fields={[
-          "id: uuid (PK)",
-          "ambassadorId: string (FK)",
-          "status: AmbassadorVerificationStatus",
-          "socialLinks: jsonb?",
-          "audienceProof: jsonb?",
-          "niches: string[]",
-          "documents: jsonb?",
-          "reviewedBy: string?",
-          "reviewedAt: datetime?",
-          "rejectionReason: string?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["ambassador (Cascade)"]}
-        indexes={["ambassadorId", "status", "createdAt"]}
-      />
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Rate Limiting</h4>
+        <div className="flex items-center gap-4">
+          <div className="text-4xl font-bold text-[#FF6B35] font-display">5</div>
+          <div>
+            <p className="text-sm text-[#1A1A1A] font-semibold">попыток в минуту</p>
+            <p className="text-xs text-[#666]">На endpoints: login, register</p>
+          </div>
+        </div>
+      </Card>
     </div>
   );
 }
 
-function DirectionBSection() {
+function JwtSection() {
   return (
     <div>
-      <SectionHeader num="03" title="Направление B: Рекламные места" />
-      <p className="text-[#444] mb-8">Владелец → Площадка → Рекламное место → Креатор бронирует → Сделка → Выполнение → Выплата.</p>
+      <SectionHeader num="03" title="JWT & Refresh Token Rotation" />
+      
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Access Token</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Алгоритм</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">HS256</code>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Срок жизни</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">15 мин</code>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Хранение</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">localStorage</code>
+            </div>
+          </div>
+        </Card>
 
-      <ModelCard
-        name="PlatformOwnerProfile"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (unique, FK)",
-          "isVerified: boolean",
-          "companyName: string?",
-          "legalEntity: string?",
-          "inn, ogrn: string? (Russian tax IDs)",
-          "contactEmail, contactPhone: string?",
-          "rating: Decimal(3,2)?",
-          "totalDeals, completedDeals: int",
-          "createdAt, updatedAt",
-        ]}
-        relations={["user (Cascade)", "platforms"]}
-        indexes={["userId", "isVerified"]}
-      />
-
-      <ModelCard
-        name="Platform"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "ownerId: string (FK)",
-          "name: string",
-          "type: string (telegram, instagram, etc.)",
-          "url: string",
-          "audienceSize: int",
-          "audienceGeo: jsonb?",
-          "audienceAge: jsonb?",
-          "description: string?",
-          "mediaKit: jsonb?",
-          "isVerified: boolean",
-          "createdAt, updatedAt",
-        ]}
-        relations={["owner (Cascade)", "adSlots"]}
-        indexes={["ownerId", "type", "isVerified"]}
-      />
-
-      <ModelCard
-        name="AdSlot"
-        color="#FF6B35"
-        fields={[
-          "id: uuid (PK)",
-          "platformId: string (FK)",
-          "ownerId: string (FK, denormalized)",
-          "title, description: string",
-          "status: AdSlotStatus (FSM)",
-          "pricePerDay: Decimal(14,2)",
-          "currency: string (RUB)",
-          "duration: string (1d, 3d, 7d)",
-          "format: string (post, story, reel)",
-          "availability: jsonb?",
-          "requirements: jsonb?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["platform (Cascade)", "owner (Restrict)", "deals"]}
-        indexes={["platformId", "ownerId", "status", "pricePerDay", "createdAt", "platformId+status"]}
-      />
-
-      <ModelCard
-        name="Deal"
-        color="#FF6B35"
-        fields={[
-          "id: uuid (PK)",
-          "adSlotId: string (FK)",
-          "buyerId: string (FK)",
-          "status: DealStatus (FSM)",
-          "startDate, endDate: datetime",
-          "totalAmount: Decimal(14,2)",
-          "commission: Decimal(14,2) (10%)",
-          "contentBrief: string?",
-          "proofData: jsonb?",
-          "confirmedAt, completedAt: datetime?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["adSlot (Restrict)", "buyer (Restrict)"]}
-        indexes={["adSlotId", "buyerId", "status", "startDate+endDate", "createdAt", "adSlotId+status"]}
-      />
-    </div>
-  );
-}
-
-function FinanceSection() {
-  return (
-    <div>
-      <SectionHeader num="04" title="Финансы" />
-      <p className="text-[#444] mb-4">Double-entry journal. Все операции через FinancialTransaction.</p>
-      <p className="text-sm text-[#E63946] mb-8 border border-[#E63946]/30 rounded-xl p-4 bg-[#E63946]/5">
-        ⚠️ КРИТИЧНО: Баланс = SUM(deposit, reward, refund) − SUM(reserve, payout, fee). Запрещено хранить balance как поле.
-      </p>
-
-      <ModelCard
-        name="FinancialTransaction"
-        color="#E63946"
-        fields={[
-          "id: uuid (PK)",
-          "idempotencyKey: string (unique)",
-          "type: FinancialTransactionType (enum)",
-          "userId: string (FK)",
-          "amount: Decimal(14,2) (always positive)",
-          "currency: string (RUB)",
-          "status: FinancialTransactionStatus",
-          "relatedEntityType: string?",
-          "relatedEntityId: string?",
-          "description: string?",
-          "metadata: jsonb?",
-          "createdAt: datetime",
-        ]}
-        relations={["user (Restrict)"]}
-        indexes={["userId", "idempotencyKey", "type", "status", "createdAt", "userId+type", "userId+createdAt", "relatedEntityType+relatedEntityId"]}
-      />
+        <Card>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Refresh Token</h4>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Алгоритм</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">HS256</code>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Срок жизни</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">7 дней</code>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-sm text-[#666]">Хранение</span>
+              <code className="text-sm font-mono text-[#1A1A1A]">httpOnly cookie</code>
+            </div>
+          </div>
+        </Card>
+      </div>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы транзакций (enum)</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Refresh Token Rotation</h4>
+        <div className="space-y-4">
           {[
-            { type: "deposit", desc: "Пополнение", sign: "+" },
-            { type: "reward", desc: "Вознаграждение", sign: "+" },
-            { type: "refund", desc: "Возврат", sign: "+" },
-            { type: "reserve", desc: "Резервирование", sign: "−" },
-            { type: "payout", desc: "Выплата", sign: "−" },
-            { type: "fee", desc: "Комиссия", sign: "−" },
-            { type: "release", desc: "Освобождение", sign: "+" },
-            { type: "adjustment", desc: "Корректировка", sign: "±" },
-          ].map((t) => (
-            <div key={t.type} className="border border-[#E5E5E5] rounded-lg p-3">
-              <code className="text-xs font-mono text-[#1A1A1A]">{t.type}</code>
-              <p className="text-xs text-[#666] mt-1">{t.desc}</p>
-              <p className={`text-sm font-bold mt-1 ${t.sign === "+" ? "text-[#2D9B6E]" : t.sign === "−" ? "text-[#E63946]" : "text-[#F59E0B]"}`}>
-                {t.sign}
-              </p>
+            { step: "1", desc: "Пользователь получает refresh token при логине" },
+            { step: "2", desc: "При использовании refresh token — старый помечается как revoked" },
+            { step: "3", desc: "Генерируется новый refresh token" },
+            { step: "4", desc: "Создается новая сессия в БД" },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#FF6B35] font-bold">{item.step}</span>
+              </div>
+              <p className="text-sm text-[#444] pt-1">{item.desc}</p>
             </div>
           ))}
         </div>
       </Card>
 
-      <ModelCard
-        name="PayoutRequest"
-        color="#E63946"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (FK)",
-          "amount: Decimal(14,2)",
-          "currency: string (RUB)",
-          "status: PayoutStatus (FSM)",
-          "paymentMethod: string?",
-          "requisites: jsonb? (masked)",
-          "processedBy: string?",
-          "processedAt: datetime?",
-          "errorDetails: string?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["user (Restrict)"]}
-        indexes={["userId", "status", "createdAt", "userId+status"]}
-      />
-
-      <Card className="mt-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Правила финансовой безопасности</h4>
+      <Card className="border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚨 При утечке refresh token</h4>
+        <p className="text-sm text-[#444] mb-4">
+          Если обнаружено повторное использование старого refresh token:
+        </p>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Все операции в ACID-транзакциях (prisma.$transaction)</li>
-          <li>• Идемпотентность через idempotencyKey (unique)</li>
-          <li>• Транзакции неизменяемы (immutable)</li>
-          <li>• SELECT ... FOR UPDATE при работе с балансом</li>
-          <li>• Минимальный вывод: 500 ₽</li>
-          <li>• Ежедневная сверка (reconciliation cron)</li>
+          <li>• <strong>Все сессии пользователя отзываются</strong></li>
+          <li>• Записывается audit log: <code className="font-mono bg-white px-1.5 py-0.5 rounded">security.refresh_token_reuse</code></li>
+          <li>• Возвращается ошибка 401</li>
+          <li>• Пользователь должен войти заново</li>
         </ul>
       </Card>
     </div>
   );
 }
 
-function ModerationSection() {
+function TwoFaSection() {
   return (
     <div>
-      <SectionHeader num="05" title="Модерация и споры" />
-      <p className="text-[#444] mb-8">Ручная проверка обязательна. Очередь модерации с приоритетами.</p>
+      <SectionHeader num="04" title="2FA (TOTP)" />
+      <p className="text-[#444] mb-8">Time-based One-Time Password. Обязателен для финансовых операций.</p>
 
-      <ModelCard
-        name="ModerationQueue"
-        color="#F59E0B"
-        fields={[
-          "id: uuid (PK)",
-          "entityType: ModerationQueueType (enum)",
-          "entityId: string",
-          "status: ModerationQueueStatus",
-          "priority: int (higher = urgent)",
-          "assignedTo: string? (moderator)",
-          "assignedAt: datetime?",
-          "reviewedAt: datetime?",
-          "decision: string?",
-          "decisionReason: string?",
-          "metadata: jsonb?",
-          "createdAt, updatedAt",
-        ]}
-        indexes={["entityType+entityId", "status", "priority+createdAt", "assignedTo", "createdAt"]}
-      />
+      <div className="space-y-4 mb-8">
+        <EndpointCard method="POST" path="/api/v1/auth/totp/enable" desc="Инициализация настройки TOTP" auth />
+        <EndpointCard method="POST" path="/api/v1/auth/totp/verify" desc="Подтверждение TOTP" auth />
+        <EndpointCard method="POST" path="/api/v1/auth/totp/disable" desc="Отключение TOTP" auth />
+      </div>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы модерации (enum)</h4>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "ambassador_verification",
-            "platform_owner_verification",
-            "campaign",
-            "task",
-            "deal",
-            "dispute",
-            "payout",
-          ].map((type) => (
-            <code key={type} className="px-3 py-1.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded-lg text-xs font-mono text-[#1A1A1A]">
-              {type}
-            </code>
-          ))}
-        </div>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Enable TOTP — Response</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "secret": "JBSWY3DPEHPK3PXP",
+  "qrCodeUrl": "otpauth://totp/KURUTA:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=KURUTA"
+}`}
+        </pre>
       </Card>
 
-      <ModelCard
-        name="Dispute"
-        color="#E63946"
-        fields={[
-          "id: uuid (PK)",
-          "openedBy: string (FK)",
-          "relatedType: string (task, deal)",
-          "relatedId: string",
-          "status: DisputeStatus (FSM)",
-          "reason: string",
-          "description: string?",
-          "evidence: jsonb?",
-          "resolution: string?",
-          "resolvedBy: string?",
-          "resolvedAt: datetime?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["opener (Restrict)"]}
-        indexes={["openedBy", "relatedType+relatedId", "status", "createdAt"]}
-      />
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Когда требуется 2FA</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Вывод средств</li>
+          <li>• Смена реквизитов вывода</li>
+          <li>• Критические изменения аккаунта</li>
+        </ul>
+      </Card>
     </div>
   );
 }
 
-function SystemSection() {
+function UsersSection() {
   return (
     <div>
-      <SectionHeader num="06" title="Системные сущности" />
-      <p className="text-[#444] mb-8">Аудит, уведомления, антифрод, сессии.</p>
+      <SectionHeader num="05" title="Профиль пользователя" />
+      
+      <div className="space-y-4 mb-8">
+        <EndpointCard method="GET" path="/api/v1/users/me" desc="Получение профиля" auth />
+        <EndpointCard method="PUT" path="/api/v1/users/me" desc="Обновление профиля" auth />
+        <EndpointCard method="POST" path="/api/v1/users/me/avatar" desc="Загрузка аватара" auth />
+      </div>
 
-      <ModelCard
-        name="AuditLog"
-        color="#1A1A1A"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string? (FK)",
-          "action: string",
-          "entityType: string",
-          "entityId: string",
-          "before: jsonb? (previous state)",
-          "after: jsonb? (new state)",
-          "ip: string?",
-          "userAgent: string?",
-          "timestamp: datetime",
-        ]}
-        relations={["user (SetNull)"]}
-        indexes={["userId", "entityType+entityId", "action", "timestamp", "userId+timestamp"]}
-      />
-
-      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-2">⚠️ Append-only</h4>
-        <p className="text-sm text-[#444]">AuditLog <strong>НЕ имеет updatedAt</strong>. Записи только добавляются, никогда не изменяются. Хранение — минимум 3 года.</p>
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Update Profile — Request</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "displayName": "John Doe",
+  "bio": "Software developer",
+  "country": "Russia",
+  "city": "Moscow",
+  "timezone": "Europe/Moscow"
+}`}
+        </pre>
       </Card>
 
-      <ModelCard
-        name="Notification"
-        color="#6366F1"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (FK)",
-          "type: NotificationType (enum)",
-          "title: string",
-          "body: string",
-          "data: jsonb? (deep link, refs)",
-          "readAt: datetime?",
-          "createdAt: datetime",
-        ]}
-        relations={["user (Cascade)"]}
-        indexes={["userId+readAt", "userId+createdAt", "type"]}
-      />
-
-      <ModelCard
-        name="AntiFraudSignal"
-        color="#E63946"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string? (FK)",
-          "type: AntiFraudSignalType (enum)",
-          "severity: AntiFraudSignalSeverity",
-          "title: string",
-          "description: string",
-          "metadata: jsonb? (evidence)",
-          "reviewedBy: string?",
-          "reviewedAt: datetime?",
-          "resolved: boolean",
-          "resolution: string?",
-          "createdAt, updatedAt",
-        ]}
-        relations={["user (SetNull)"]}
-        indexes={["userId", "type", "severity", "resolved", "createdAt", "userId+type"]}
-      />
-
-      <ModelCard
-        name="Session"
-        color="#999"
-        fields={[
-          "id: uuid (PK)",
-          "userId: string (FK)",
-          "refreshToken: string (unique, hashed)",
-          "userAgent: string?",
-          "ip: string?",
-          "expiresAt: datetime",
-          "revokedAt: datetime?",
-          "createdAt: datetime",
-        ]}
-        relations={["user (Cascade)"]}
-        indexes={["userId", "expiresAt"]}
-      />
+      <Card className="border-[#FF6B35]/30 bg-[#FF6B35]/5">
+        <h4 className="font-semibold text-[#FF6B35] mb-3">📸 Загрузка аватара</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Валидация MIME по содержимому (magic numbers)</li>
+          <li>• Ограничение размера: 10 MB</li>
+          <li>• Разрешенные типы: JPEG, PNG, WebP</li>
+          <li>• Хранение в S3 (MinIO)</li>
+          <li>• Audit log при загрузке</li>
+        </ul>
+      </Card>
     </div>
   );
 }
 
-function IndexesSection() {
+function GuardsSection() {
   return (
     <div>
-      <SectionHeader num="07" title="Индексы и оптимизация" />
-      <p className="text-[#444] mb-8">Индексы на всех FK, email/phone (unique), составные индексы для частых запросов.</p>
-
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        {[
-          { category: "Unique индексы", items: ["User.email", "User.phone", "FinancialTransaction.idempotencyKey", "Session.refreshToken"] },
-          { category: "Составные индексы", items: ["Task(campaignId, status)", "Deal(adSlotId, status)", "FinancialTransaction(userId, createdAt)", "AuditLog(userId, timestamp)"] },
-          { category: "FK индексы", items: ["Все foreign key поля", "userId в связанных таблицах", "campaignId, adSlotId, etc."] },
-          { category: "Статусные индексы", items: ["Все status поля", "createdAt для сортировки", "priority+createdAt для очереди"] },
-        ].map((group) => (
-          <Card key={group.category}>
-            <h4 className="font-display font-semibold text-[#1A1A1A] mb-3 text-sm uppercase tracking-wider">{group.category}</h4>
-            <div className="space-y-2">
-              {group.items.map((item) => (
-                <code key={item} className="block text-xs font-mono text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded">
-                  {item}
-                </code>
-              ))}
+      <SectionHeader num="06" title="Guards" />
+      
+      <div className="space-y-4">
+        <Card>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-[#6366F1]/10 flex items-center justify-center">
+              <span className="text-[#6366F1] font-bold">🔐</span>
             </div>
-          </Card>
+            <h3 className="font-display font-semibold text-[#1A1A1A]">JwtAuthGuard</h3>
+          </div>
+          <p className="text-sm text-[#666] mb-3">Проверяет валидность JWT access token</p>
+          <pre className="text-xs font-mono bg-[#F5F5F0] p-3 rounded-lg">
+{`@UseGuards(JwtAuthGuard)
+@Get('protected')
+getProtected() {
+  return 'Protected resource';
+}`}
+          </pre>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-[#2D9B6E]/10 flex items-center justify-center">
+              <span className="text-[#2D9B6E] font-bold">👥</span>
+            </div>
+            <h3 className="font-display font-semibold text-[#1A1A1A]">RolesGuard</h3>
+          </div>
+          <p className="text-sm text-[#666] mb-3">Проверяет наличие необходимых ролей</p>
+          <pre className="text-xs font-mono bg-[#F5F5F0] p-3 rounded-lg">
+{`@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin', 'moderator')
+@Get('admin')
+getAdmin() {
+  return 'Admin resource';
+}`}
+          </pre>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-[#E63946]/10 flex items-center justify-center">
+              <span className="text-[#E63946] font-bold">⚡</span>
+            </div>
+            <h3 className="font-display font-semibold text-[#1A1A1A]">RateLimitGuard</h3>
+          </div>
+          <p className="text-sm text-[#666] mb-3">Ограничивает частоту запросов</p>
+          <div className="grid grid-cols-2 gap-3 mt-3">
+            <div className="border border-[#E5E5E5] rounded-lg p-3">
+              <p className="text-xs text-[#666]">Auth endpoints</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">5/мин</p>
+            </div>
+            <div className="border border-[#E5E5E5] rounded-lg p-3">
+              <p className="text-xs text-[#666]">API endpoints</p>
+              <p className="text-lg font-bold text-[#1A1A1A]">100/мин</p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function SecuritySection() {
+  return (
+    <div>
+      <SectionHeader num="07" title="Безопасность" />
+      
+      <div className="space-y-4">
+        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Хеширование паролей</h4>
+          <ul className="text-sm text-[#444] space-y-1.5">
+            <li>• Алгоритм: <code className="font-mono bg-white px-1.5 py-0.5 rounded">Argon2id</code></li>
+            <li>• Уникальная соль на каждую запись</li>
+            <li>• Memory: 64 MB, Time: 3, Parallelism: 4</li>
+          </ul>
+        </Card>
+
+        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ JWT Security</h4>
+          <ul className="text-sm text-[#444] space-y-1.5">
+            <li>• Access: короткоживущий (15 мин)</li>
+            <li>• Refresh: ротируется при каждом использовании</li>
+            <li>• Refresh хранится в httpOnly Secure SameSite=Strict cookie</li>
+            <li>• При утечке — отзыв всей семьи токенов</li>
+          </ul>
+        </Card>
+
+        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Audit Log</h4>
+          <p className="text-sm text-[#444] mb-3">Все события аутентификации логируются:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              "user.register",
+              "user.login",
+              "user.logout",
+              "user.refresh",
+              "user.totp_initiated",
+              "user.totp_enabled",
+              "user.totp_disabled",
+              "user.profile_updated",
+              "user.avatar_updated",
+              "security.refresh_token_reuse",
+            ].map((event) => (
+              <code key={event} className="px-2 py-1 bg-white border border-[#E5E5E5] rounded text-xs font-mono text-[#1A1A1A]">
+                {event}
+              </code>
+            ))}
+          </div>
+        </Card>
+
+        <Card className="border-[#E63946]/30 bg-[#E63946]/5">
+          <h4 className="font-semibold text-[#E63946] mb-3">🚫 ЗАПРЕЩЕНО</h4>
+          <ul className="text-sm text-[#444] space-y-1.5">
+            <li>• ❌ Использовать bcrypt</li>
+            <li>• ❌ Хранить refresh token в localStorage</li>
+            <li>• ❌ Логировать пароли/токены</li>
+          </ul>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function TestsSection() {
+  return (
+    <div>
+      <SectionHeader num="08" title="Тестирование" />
+      
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">E2E тесты</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`cd apps/api
+npm run test:e2e`}
+        </pre>
+      </Card>
+
+      <div className="space-y-3 mb-8">
+        {[
+          { test: "Регистрация (успех, дубликат, слабый пароль)", count: 3 },
+          { test: "Вход (успех, неверный пароль, несуществующий)", count: 3 },
+          { test: "Получение текущего пользователя", count: 2 },
+          { test: "Refresh token (успех, ротация, повторное использование)", count: 3 },
+          { test: "Logout", count: 1 },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
+            <span className="text-sm text-[#1A1A1A]">{item.test}</span>
+            <span className="text-xs font-mono text-[#999] bg-[#F5F5F0] px-2 py-1 rounded">{item.count} tests</span>
+          </div>
         ))}
       </div>
 
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
         <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• <code className="font-mono bg-white px-1.5 py-0.5 rounded">npx prisma validate</code> — без ошибок</li>
-          <li>• <code className="font-mono bg-white px-1.5 py-0.5 rounded">npx prisma migrate dev --name init</code> — проходит</li>
-          <li>• Все 18 сущностей присутствуют</li>
-          <li>• Деньги только Decimal(14,2)</li>
-          <li>• Баланс НЕ хранится в User</li>
-          <li>• AuditLog append-only (нет updatedAt)</li>
-          <li>• Cascade delete только где безопасно</li>
-          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(database): initial schema</code></li>
+          <li>• E2E тесты: register → login → refresh → me → logout</li>
+          <li>• Тест ротации refresh токенов</li>
+          <li>• Тест отзыва всех сессий при утечке</li>
+          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): auth module with 2FA and rate limiting</code></li>
         </ul>
-      </Card>
-
-      <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Следующие шаги</h4>
-        <div className="space-y-2">
-          {[
-            { step: "Применить миграцию", cmd: "cd packages/database && npx prisma migrate dev --name init" },
-            { step: "Сгенерировать клиент", cmd: "npx prisma generate" },
-            { step: "Открыть Studio", cmd: "npx prisma studio" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <span className="font-mono text-xs text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded">{String(i + 1).padStart(2, "0")}</span>
-              <span className="text-sm text-[#1A1A1A] flex-1">{item.step}</span>
-              <code className="text-xs font-mono text-[#666] bg-[#F5F5F0] px-2 py-1 rounded">{item.cmd}</code>
-            </div>
-          ))}
-        </div>
       </Card>
     </div>
   );
@@ -727,13 +584,14 @@ function IndexesSection() {
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
+  registration: RegistrationSection,
+  login: LoginSection,
+  jwt: JwtSection,
+  "2fa": TwoFaSection,
   users: UsersSection,
-  "direction-a": DirectionASection,
-  "direction-b": DirectionBSection,
-  finance: FinanceSection,
-  moderation: ModerationSection,
-  system: SystemSection,
-  indexes: IndexesSection,
+  guards: GuardsSection,
+  security: SecuritySection,
+  tests: TestsSection,
 };
 
 export default function App() {
@@ -753,7 +611,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Database Schema</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Auth Module</p>
             </div>
           </div>
 
@@ -771,8 +629,8 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">PostgreSQL 16 + Prisma</span>
-            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">18 MODELS</span>
+            <span className="text-xs text-[#999] font-mono">JWT + TOTP + Rate Limit</span>
+            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">SECURE</span>
           </div>
         </div>
       </header>
