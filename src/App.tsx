@@ -2,10 +2,10 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "marketplace", num: "01", title: "Единый маркетплейс" },
-  { id: "commission", num: "02", title: "Комиссия" },
-  { id: "booking", num: "03", title: "Бронирование" },
-  { id: "repurchase", num: "04", title: "Повторная покупка" },
+  { id: "moderation", num: "01", title: "Модерация" },
+  { id: "disputes", num: "02", title: "Споры" },
+  { id: "anti-fraud", num: "03", title: "Антифрод" },
+  { id: "verification", num: "04", title: "Верификация" },
   { id: "tests", num: "05", title: "Тесты" },
 ];
 
@@ -59,17 +59,17 @@ function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Ad Slots & Deals" />
+      <SectionHeader num="00" title="Moderation, Disputes & Anti-Fraud" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        Модуль рекламных мест и сделок с логикой Единого маркетплейса. Направление B KURUTA.
+        Модуль реализует систему модерации, разрешения споров и антифрод-защиты для платформы KURUTA.
       </p>
 
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Endpoints", value: "12" },
-          { label: "Комиссия", value: "10%" },
-          { label: "E2E тестов", value: "11" },
-          { label: "FSM состояний", value: "2" },
+          { label: "Endpoints", value: "15" },
+          { label: "Cron задач", value: "5" },
+          { label: "E2E тестов", value: "8" },
+          { label: "Сущностей", value: "3" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
@@ -79,29 +79,26 @@ function OverviewSection() {
       </div>
 
       <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚨 КРИТИЧНО: Единый маркетплейс</h4>
-        <p className="text-sm text-[#444] mb-3">
-          Владелец площадки, переключившись в роль Креатора, видит ОБЩИЙ каталог. При этом его собственные рекламные места <strong>исключаются из выдачи</strong>, чтобы он не покупал у себя.
-        </p>
-        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`GET /ad-slots/catalog
-Если пользователь = владелец → исключить его слоты из выдачи
-Если пользователь = креатор → видит все слоты`}
-        </pre>
+        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Ключевые особенности</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• <strong>Универсальная очередь модерации</strong> для всех типов сущностей</li>
+          <li>• <strong>Система споров</strong> с блокировкой сделок и распределением денег</li>
+          <li>• <strong>Антифрод-система</strong> с автоматическими cron-проверками</li>
+          <li>• <strong>Повторная верификация</strong> амбассадоров раз в 30 дней</li>
+          <li>• <strong>Полный аудит</strong> всех действий модераторов</li>
+        </ul>
       </Card>
 
       <div className="space-y-3">
         {[
-          { task: "CRUD рекламных мест для Владельца", status: "done" as const },
-          { task: "Модерация рекламных мест", status: "done" as const },
-          { task: "Публичный каталог с фильтрами", status: "done" as const },
-          { task: "Бронирование с SELECT FOR UPDATE", status: "done" as const },
-          { task: "Оплата через FinanceService", status: "done" as const },
-          { task: "Подтверждение выполнения", status: "done" as const },
-          { task: "Модерация сделок", status: "done" as const },
-          { task: "Комиссия 10% через FinanceService.payToOwner()", status: "done" as const },
-          { task: "Повторная покупка у того же владельца", status: "done" as const },
-          { task: "Единый маркетплейс (исключение своих слотов)", status: "done" as const },
+          { task: "Универсальная очередь ModerationQueue", status: "done" as const },
+          { task: "Аудит действий модератора", status: "done" as const },
+          { task: "Система споров с блокировкой сделок", status: "done" as const },
+          { task: "Распределение денег через FinanceService", status: "done" as const },
+          { task: "Антифрод-сигналы (6 типов)", status: "done" as const },
+          { task: "Cron-задачи для антифрода", status: "done" as const },
+          { task: "Ручная проверка сигналов модератором", status: "done" as const },
+          { task: "Повторная верификация амбассадоров", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -120,140 +117,78 @@ function OverviewSection() {
   );
 }
 
-function MarketplaceSection() {
+function ModerationSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Единый маркетплейс" />
+      <SectionHeader num="01" title="Модерация" />
       
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Логика фильтрации</h4>
-        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`async getCatalog(userId: string | null, filters?: CatalogFilterDto) {
-  const where: Prisma.AdSlotWhereInput = {
-    status: AdSlotStatus.published,
-  };
-
-  // КРИТИЧНО: Если пользователь авторизован
-  if (userId) {
-    // Проверяем, является ли пользователь владельцем
-    const isOwner = await prisma.platformOwnerProfile.findUnique({
-      where: { userId },
-    });
-
-    if (isOwner) {
-      // Исключаем его собственные слоты
-      where.ownerId = {
-        not: userId,
-      };
-    }
-  }
-
-  // Применяем остальные фильтры...
-}`}
-        </pre>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Универсальная очередь</h4>
+        <p className="text-sm text-[#666] mb-4">Одна очередь для всех типов сущностей:</p>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { type: "campaign", color: "#FF6B35" },
+            { type: "task", color: "#6366F1" },
+            { type: "ad_slot", color: "#2D9B6E" },
+            { type: "deal", color: "#F59E0B" },
+            { type: "dispute", color: "#E63946" },
+            { type: "ambassador_verification", color: "#999" },
+            { type: "anti_fraud", color: "#EC4899" },
+          ].map((item) => (
+            <span
+              key={item.type}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono border"
+              style={{
+                backgroundColor: `${item.color}15`,
+                borderColor: `${item.color}40`,
+                color: item.color,
+              }}
+            >
+              {item.type}
+            </span>
+          ))}
+        </div>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Владелец в роли Креатора</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Видит общий каталог</li>
-            <li>• Его слоты <strong>исключены</strong></li>
-            <li>• Не может купить у себя</li>
-            <li>• Может купить у других владельцев</li>
-          </ul>
-        </Card>
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">API Endpoints</h4>
+        <div className="space-y-2">
+          {[
+            { method: "GET", path: "/moderation/queue", desc: "Получить очередь" },
+            { method: "POST", path: "/moderation/queue/:id/assign", desc: "Назначить модератора" },
+            { method: "POST", path: "/moderation/queue/:id/approve", desc: "Одобрить" },
+            { method: "POST", path: "/moderation/queue/:id/reject", desc: "Отклонить" },
+            { method: "GET", path: "/moderation/stats", desc: "Статистика модератора" },
+          ].map((item) => (
+            <div key={item.path} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
+              <span className={`px-2 py-1 rounded text-xs font-bold font-mono ${
+                item.method === "GET" ? "bg-[#2D9B6E]/10 text-[#2D9B6E]" : "bg-[#6366F1]/10 text-[#6366F1]"
+              }`}>
+                {item.method}
+              </span>
+              <code className="text-sm font-mono text-[#1A1A1A] flex-1">{item.path}</code>
+              <span className="text-xs text-[#666]">{item.desc}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
 
-        <Card className="border-[#6366F1]/30 bg-[#6366F1]/5">
-          <h4 className="font-semibold text-[#6366F1] mb-3">✓ Обычный Креатор</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Видит все опубликованные слоты</li>
-            <li>• Может бронировать любые слоты</li>
-            <li>• Не является владельцем</li>
-          </ul>
-        </Card>
-      </div>
-
-      <Card className="mt-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚫 Защита от самопокупки</h4>
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Аудит действий</h4>
+        <p className="text-sm text-[#444] mb-3">Все действия модераторов логируются:</p>
         <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`async bookSlot(buyerId: string, adSlotId: string, dto: BookSlotDto) {
-  const adSlot = await prisma.adSlot.findUnique({
-    where: { id: adSlotId },
-  });
-
-  // Владелец не может покупать у себя
-  if (adSlot.ownerId === buyerId) {
-    throw new ForbiddenException('You cannot book your own ad slot');
-  }
-
-  // ... остальная логика
-}`}
-        </pre>
-      </Card>
-    </div>
-  );
-}
-
-function CommissionSection() {
-  return (
-    <div>
-      <SectionHeader num="02" title="Комиссия платформы" />
-      
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Формула</h4>
-        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`Base Price (X) = цена, указанная владельцем
-Commission = X * 10%
-Total Amount = X + Commission
-
-Владелец получает: X
-Платформа получает: Commission (10%)
-Креатор платит: Total Amount (X + 10%)`}
-        </pre>
-      </Card>
-
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Пример</h4>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="border border-[#E5E5E5] rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Владелец указывает</p>
-            <p className="text-2xl font-bold text-[#1A1A1A] font-display">5000 ₽</p>
-          </div>
-          <div className="border border-[#FF6B35]/30 bg-[#FF6B35]/5 rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Комиссия (10%)</p>
-            <p className="text-2xl font-bold text-[#FF6B35] font-display">500 ₽</p>
-          </div>
-          <div className="border border-[#6366F1]/30 bg-[#6366F1]/5 rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Креатор платит</p>
-            <p className="text-2xl font-bold text-[#6366F1] font-display">5500 ₽</p>
-          </div>
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="border border-[#2D9B6E]/30 bg-[#2D9B6E]/5 rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Владелец получает</p>
-            <p className="text-2xl font-bold text-[#2D9B6E] font-display">5000 ₽</p>
-          </div>
-          <div className="border border-[#E63946]/30 bg-[#E63946]/5 rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Платформа зарабатывает</p>
-            <p className="text-2xl font-bold text-[#E63946] font-display">500 ₽</p>
-          </div>
-        </div>
-      </Card>
-
-      <Card>
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Реализация через FinanceService</h4>
-        <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`// При одобрении сделки модератором
-const ownerAmount = deal.totalAmount - deal.commission;
-
-await this.financeService.payToOwner({
-  ownerId: deal.adSlot.ownerId,
-  amount: ownerAmount.toString(),
-  description: \`Выплата за рекламное размещение\`,
-  idempotencyKey,
-  relatedEntityType: 'deal',
-  relatedEntityId: dealId,
+{`await prisma.auditLog.create({
+   {
+    userId: moderatorId,
+    action: 'moderation.approved',
+    entityType: 'ModerationQueue',
+    entityId: queueId,
+    after: {
+      entityType: queueItem.entityType,
+      entityId: queueItem.entityId,
+      decision: dto.decision,
+    },
+  },
 });`}
         </pre>
       </Card>
@@ -261,93 +196,21 @@ await this.financeService.payToOwner({
   );
 }
 
-function BookingSection() {
+function DisputesSection() {
   return (
     <div>
-      <SectionHeader num="03" title="Бронирование" />
+      <SectionHeader num="02" title="Споры" />
       
-      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Защита от двойного бронирования</h4>
-        <p className="text-sm text-[#444]">
-          Используется <code className="font-mono bg-white px-1.5 py-0.5 rounded">prisma.$transaction</code> для атомарности и предотвращения race conditions.
-        </p>
-      </Card>
-
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Логика бронирования</h4>
-        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`async bookSlot(buyerId: string, adSlotId: string, dto: BookSlotDto) {
-  return prisma.$transaction(async (tx) => {
-    // 1. Получаем слот
-    const adSlot = await tx.adSlot.findUnique({
-      where: { id: adSlotId },
-    });
-
-    // 2. Проверяем, что владелец не покупает у себя
-    if (adSlot.ownerId === buyerId) {
-      throw new ForbiddenException('Cannot book own slot');
-    }
-
-    // 3. Проверяем доступность на даты
-    const conflictingDeals = await tx.deal.findMany({
-      where: {
-        adSlotId,
-        status: { in: ['created', 'paid', 'in_progress', 'confirming'] },
-        OR: [
-          {
-            startDate: { lte: endDate },
-            endDate: { gte: startDate },
-          },
-        ],
-      },
-    });
-
-    if (conflictingDeals.length > 0) {
-      throw new ConflictException('Slot already booked');
-    }
-
-    // 4. Вычисляем стоимость
-    const days = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    const basePrice = adSlot.pricePerDay * days;
-    const commission = basePrice * 0.10;
-    const totalAmount = basePrice + commission;
-
-    // 5. Создаём сделку
-    const deal = await tx.deal.create({
-       {
-        adSlotId,
-        buyerId,
-        status: 'created',
-        startDate,
-        endDate,
-        totalAmount,
-        commission,
-      },
-    });
-
-    // 6. Обновляем статус слота
-    await tx.adSlot.update({
-      where: { id: adSlotId },
-       { status: 'booked' },
-    });
-
-    return deal;
-  });
-}`}
-        </pre>
-      </Card>
-
-      <Card>
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">FSM сделки</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Жизненный цикл спора</h4>
         <div className="flex flex-wrap gap-2">
           {[
-            { state: "created", color: "#999" },
-            { state: "paid", color: "#6366F1" },
-            { state: "in_progress", color: "#6366F1" },
-            { state: "confirming", color: "#F59E0B" },
-            { state: "completed", color: "#2D9B6E" },
-            { state: "disputed", color: "#E63946" },
-            { state: "cancelled", color: "#E63946" },
+            { state: "opened", color: "#F59E0B" },
+            { state: "investigating", color: "#6366F1" },
+            { state: "resolved_creator", color: "#2D9B6E" },
+            { state: "resolved_executor", color: "#2D9B6E" },
+            { state: "resolved_partial", color: "#F59E0B" },
+            { state: "closed", color: "#999" },
           ].map((item, i) => (
             <div key={item.state} className="flex items-center gap-2">
               <span
@@ -360,100 +223,208 @@ function BookingSection() {
               >
                 {item.state}
               </span>
-              {i < 6 && <span className="text-[#CCC]">→</span>}
+              {i < 5 && <span className="text-[#CCC]">→</span>}
             </div>
           ))}
         </div>
       </Card>
+
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Блокировка сделки</h4>
+        <p className="text-sm text-[#444] mb-3">При открытии спора связанная сущность блокируется:</p>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`// Блокируем сделку/задачу
+await tx.deal.update({
+  where: { id: dto.entityId },
+   { status: 'disputed' },
+});
+
+// Или для задачи
+await tx.task.update({
+  where: { id: dto.entityId },
+   { status: 'disputed' },
+});`}
+        </pre>
+      </Card>
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Распределение денег</h4>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="border border-[#2D9B6E]/30 bg-[#2D9B6E]/5 rounded-lg p-4">
+            <h5 className="font-semibold text-[#2D9B6E] mb-2">В пользу креатора</h5>
+            <p className="text-xs text-[#444]">100% возврат креатору</p>
+            <p className="text-xs text-[#666] mt-1">Исполнитель: 0%</p>
+          </div>
+          <div className="border border-[#6366F1]/30 bg-[#6366F1]/5 rounded-lg p-4">
+            <h5 className="font-semibold text-[#6366F1] mb-2">В пользу исполнителя</h5>
+            <p className="text-xs text-[#444]">100% выплата исполнителю</p>
+            <p className="text-xs text-[#666] mt-1">Креатор: 0%</p>
+          </div>
+          <div className="border border-[#F59E0B]/30 bg-[#F59E0B]/5 rounded-lg p-4">
+            <h5 className="font-semibold text-[#F59E0B] mb-2">Частичный возврат</h5>
+            <p className="text-xs text-[#444]">Распределение по %</p>
+            <p className="text-xs text-[#666] mt-1">Например: 50/50</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Интеграция с FinanceService</h4>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`// Возврат креатору
+await this.financeService.refund({
+  userId: creatorId,
+  originalTransactionId: taskId,
+  amount: '1000.00',
+  description: 'Возврат по спору #disputeId',
+  idempotencyKey: uuidv4(),
+});
+
+// Выплата исполнителю
+await this.financeService.reward({
+  userId: executorId,
+  amount: '500.00',
+  description: 'Выплата по спору #disputeId',
+  idempotencyKey: uuidv4(),
+  relatedEntityType: 'task',
+  relatedEntityId: taskId,
+});`}
+        </pre>
+      </Card>
     </div>
   );
 }
 
-function RepurchaseSection() {
+function AntiFraudSection() {
   return (
     <div>
-      <SectionHeader num="04" title="Повторная покупка" />
-      <p className="text-[#444] mb-8">Упрощенный эндпоинт для покупки у того же владельца.</p>
-
-      <EndpointCard method="POST" path="/deals/repurchase" desc="Повторная покупка" auth />
-
-      <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request</h4>
-        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`POST /deals/repurchase
-{
-  "previousDealId": "uuid-previous-deal",
-  "startDate": "2024-03-01",
-  "endDate": "2024-03-02",
-  "idempotencyKey": "uuid"
-}`}
-        </pre>
+      <SectionHeader num="03" title="Антифрод" />
+      
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы сигналов</h4>
+        <div className="space-y-2">
+          {[
+            { type: "duplicate_device_fingerprint", desc: "Одинаковые устройства", severity: "high" },
+            { type: "duplicate_payout_requisites", desc: "Одинаковые реквизиты", severity: "critical" },
+            { type: "suspicious_fast_completion", desc: "Быстрое выполнение", severity: "medium" },
+            { type: "duplicate_proof_screenshots", desc: "Дубликаты скриншотов", severity: "high" },
+            { type: "sudden_audience_growth", desc: "Резкий рост аудитории", severity: "medium" },
+            { type: "unusual_activity_pattern", desc: "Необычные паттерны", severity: "low" },
+          ].map((item) => (
+            <div key={item.type} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
+              <code className="text-xs font-mono text-[#1A1A1A] flex-1">{item.type}</code>
+              <span className="text-xs text-[#666]">{item.desc}</span>
+              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                item.severity === "critical" ? "bg-[#E63946]/10 text-[#E63946]" :
+                item.severity === "high" ? "bg-[#FF6B35]/10 text-[#FF6B35]" :
+                item.severity === "medium" ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
+                "bg-[#999]/10 text-[#999]"
+              }`}>
+                {item.severity}
+              </span>
+            </div>
+          ))}
+        </div>
       </Card>
 
-      <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Логика</h4>
-        <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`async repurchase(buyerId: string, dto: RepurchaseDto) {
-  // Получаем предыдущую сделку
-  const previousDeal = await prisma.deal.findUnique({
-    where: { id: dto.previousDealId },
-    include: { adSlot: true },
-  });
-
-  // Проверяем, что это сделка текущего пользователя
-  if (previousDeal.buyerId !== buyerId) {
-    throw new ForbiddenException('Can only repurchase own deals');
-  }
-
-  // Проверяем, что предыдущая сделка завершена
-  if (previousDeal.status !== 'completed') {
-    throw new BadRequestException('Can only repurchase completed deals');
-  }
-
-  // Бронируем тот же слот с новыми датами
-  return this.bookSlot(buyerId, previousDeal.adSlotId, {
-    startDate: dto.startDate,
-    endDate: dto.endDate,
-    contentBrief: previousDeal.contentBrief,
-    idempotencyKey: dto.idempotencyKey,
-  });
-}`}
-        </pre>
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Cron-задачи</h4>
+        <div className="space-y-2">
+          {[
+            { task: "check-duplicate-devices", schedule: "Каждые 6 часов" },
+            { task: "check-fast-completions", schedule: "Каждые 4 часа" },
+            { task: "check-duplicate-screenshots", schedule: "Каждые 8 часов" },
+            { task: "check-duplicate-requisites", schedule: "Раз в день" },
+          ].map((item) => (
+            <div key={item.task} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
+              <code className="text-xs font-mono text-[#1A1A1A] flex-1">{item.task}</code>
+              <span className="text-xs text-[#666]">{item.schedule}</span>
+            </div>
+          ))}
+        </div>
       </Card>
 
-      <Card className="mt-4 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Преимущества</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Не нужно искать слот заново</li>
-          <li>• Сохраняются настройки из предыдущей сделки</li>
-          <li>• Быстрее для постоянных клиентов</li>
-          <li>• Увеличивает LTV (Lifetime Value)</li>
-        </ul>
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Ручная проверка</h4>
+        <p className="text-sm text-[#444] mb-3">Сигналы не блокируют автоматически, а отправляются на ручную проверку модератором:</p>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`// Создаём сигнал
+await this.createSignal({
+  type: 'duplicate_device_fingerprint',
+  userId,
+  severity: 'high',
+  title: 'Duplicate device fingerprint detected',
+  description: \`User \${userId} shares device...\`,
+  meta { userAgent, ip, relatedUserIds },
+});
+
+// Добавляем в очередь модерации
+await prisma.moderationQueue.create({
+   {
+    entityType: 'anti_fraud',
+    entityId: signal.id,
+    status: 'pending',
+    priority: 15,
+  },
+});`}
+        </pre>
       </Card>
     </div>
   );
 }
 
-function EndpointCard({ method, path, desc, auth }: { method: string; path: string; desc: string; auth?: boolean }) {
-  const methodColors: Record<string, string> = {
-    GET: "bg-[#2D9B6E]/10 text-[#2D9B6E]",
-    POST: "bg-[#6366F1]/10 text-[#6366F1]",
-    PUT: "bg-[#F59E0B]/10 text-[#F59E0B]",
-    DELETE: "bg-[#E63946]/10 text-[#E63946]",
-  };
-
+function VerificationSection() {
   return (
-    <div className="flex items-center gap-4 border border-[#E5E5E5] rounded-xl p-4">
-      <span className={`px-3 py-1 rounded-lg text-xs font-bold font-mono ${methodColors[method]}`}>
-        {method}
-      </span>
-      <code className="text-sm font-mono text-[#1A1A1A] flex-1">{path}</code>
-      {auth && (
-        <span className="px-2 py-1 bg-[#999]/10 text-[#999] text-xs rounded">
-          🔒 Auth
-        </span>
-      )}
-      <span className="text-sm text-[#666]">{desc}</span>
+    <div>
+      <SectionHeader num="04" title="Повторная верификация" />
+      
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Cron-задача</h4>
+        <p className="text-sm text-[#666] mb-4">Запускается раз в 30 дней (первый день каждого месяца):</p>
+        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`@Cron('0 0 1 * *') // Первый день каждого месяца
+async handleReverifyAmbassadors() {
+  // Получаем всех верифицированных амбассадоров
+  const ambassadors = await prisma.ambassadorProfile.findMany({
+    where: { isVerified: true },
+  });
+
+  for (const ambassador of ambassadors) {
+    // Проверяем активность за последние 60 дней
+    const lastTask = await prisma.task.findFirst({
+      where: {
+        ambassadorId: ambassador.userId,
+        status: 'paid',
+        updatedAt: {
+          gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+        },
+      },
+    });
+
+    if (!lastTask) {
+      // Создаем заявку на повторную верификацию
+      await prisma.ambassadorVerificationRequest.create({
+         {
+          ambassadorId: ambassador.id,
+          status: 'pending',
+        },
+      });
+    }
+  }
+}`}
+        </pre>
+      </Card>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Логика проверки</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Проверяется активность за последние 60 дней</li>
+          <li>• Если нет выполненных заданий — требуется повторная верификация</li>
+          <li>• Создаётся заявка в <code className="font-mono bg-white px-1.5 py-0.5 rounded">AmbassadorVerificationRequest</code></li>
+          <li>• Добавляется в очередь модерации</li>
+          <li>• Амбассадор получает уведомление</li>
+        </ul>
+      </Card>
     </div>
   );
 }
@@ -467,15 +438,16 @@ function TestsSection() {
         <h4 className="font-semibold text-[#1A1A1A] mb-3">E2E тесты</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
 {`cd apps/api
-npm run test:e2e test/ad-slots.e2e-spec.ts`}
+npm run test:e2e test/disputes.e2e-spec.ts`}
         </pre>
       </Card>
 
       <div className="space-y-3 mb-8">
         {[
-          { test: "Полный цикл: create → publish → book → pay → confirm → moderate → payout", count: 8 },
-          { test: "Единый маркетплейс: владелец не видит свои слоты", count: 2 },
-          { test: "Расчёт комиссии 10%", count: 2 },
+          { test: "Открытие спора", count: 2 },
+          { test: "Разрешение спора (полный возврат)", count: 2 },
+          { test: "Разрешение спора (частичный возврат)", count: 2 },
+          { test: "Контроль доступа", count: 2 },
         ].map((item, i) => (
           <div key={i} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <span className="text-sm text-[#1A1A1A]">{item.test}</span>
@@ -487,25 +459,37 @@ npm run test:e2e test/ad-slots.e2e-spec.ts`}
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
         <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• E2E тест: create slot → publish → book → pay → confirm → moderate → payout</li>
-          <li>• Тест: Владелец площадки в роли Креатора не видит свои слоты в каталоге</li>
-          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): ad slots, deals and unified marketplace logic</code></li>
+          <li>• E2E тест: открытие → решение → распределение денег</li>
+          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): moderation, disputes, anti-fraud</code></li>
         </ul>
       </Card>
 
       <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Тест Единого маркетплейса</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Тест распределения денег</h4>
         <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`it('Owner should NOT see their own slots in catalog', async () => {
-  const catalog = await prisma.adSlot.findMany({
-    where: {
-      status: 'published',
-      ownerId: { not: ownerId }, // Исключаем слоты владельца
-    },
-  });
+{`it('Should resolve dispute with partial refund', async () => {
+  // Открываем спор
+  const openResponse = await request(app.getHttpServer())
+    .post('/api/v1/disputes')
+    .send({
+      entityType: 'task',
+      entityId: taskId,
+      reason: 'Partial completion',
+    })
+    .expect(201);
 
-  const ownerSlotsInCatalog = catalog.filter(slot => slot.ownerId === ownerId);
-  expect(ownerSlotsInCatalog.length).toBe(0);
+  // Разрешаем с частичным возвратом 50%
+  const resolveResponse = await request(app.getHttpServer())
+    .post(\`/api/v1/disputes/\${disputeId}/resolve\`)
+    .send({
+      resolution: 'partial_refund',
+      refundPercentage: 50,
+      comment: 'Task partially completed',
+    })
+    .expect(200);
+
+  expect(resolveResponse.body.distribution.creatorRefund).toBe(500);
+  expect(resolveResponse.body.distribution.executorPayout).toBe(500);
 });`}
         </pre>
       </Card>
@@ -515,10 +499,10 @@ npm run test:e2e test/ad-slots.e2e-spec.ts`}
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
-  marketplace: MarketplaceSection,
-  commission: CommissionSection,
-  booking: BookingSection,
-  repurchase: RepurchaseSection,
+  moderation: ModerationSection,
+  disputes: DisputesSection,
+  "anti-fraud": AntiFraudSection,
+  verification: VerificationSection,
   tests: TestsSection,
 };
 
@@ -539,7 +523,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Ad Slots & Deals</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Moderation & Disputes</p>
             </div>
           </div>
 
@@ -557,7 +541,7 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">Unified Marketplace</span>
+            <span className="text-xs text-[#999] font-mono">Anti-Fraud + Disputes</span>
             <span className="px-2 py-1 bg-[#E63946]/10 text-[#E63946] text-xs font-medium rounded-md">CRITICAL</span>
           </div>
         </div>
