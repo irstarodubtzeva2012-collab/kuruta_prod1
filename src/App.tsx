@@ -2,12 +2,11 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "auth", num: "01", title: "Аутентификация" },
-  { id: "data", num: "02", title: "Защита данных" },
-  { id: "network", num: "03", title: "Сетевая безопасность" },
-  { id: "monitoring", num: "04", title: "Мониторинг" },
-  { id: "pentest", num: "05", title: "Penetration Tests" },
-  { id: "checklist", num: "06", title: "Checklist" },
+  { id: "docker", num: "01", title: "Docker" },
+  { id: "cicd", num: "02", title: "CI/CD" },
+  { id: "monitoring", num: "03", title: "Мониторинг" },
+  { id: "backups", num: "04", title: "Бэкапы" },
+  { id: "docs", num: "05", title: "Документация" },
 ];
 
 function NavItem({ section, active, onClick }: { section: typeof sections[0]; active: boolean; onClick: () => void }) {
@@ -45,7 +44,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
   const config = {
-    done: { bg: "bg-[#2D9B6E]/10", text: "text-[#2D9B6E]", label: "✓ Закрыто" },
+    done: { bg: "bg-[#2D9B6E]/10", text: "text-[#2D9B6E]", label: "✓ Готово" },
     ready: { bg: "bg-[#FF6B35]/10", text: "text-[#FF6B35]", label: "Готово" },
     critical: { bg: "bg-[#E63946]/10", text: "text-[#E63946]", label: "Критично" },
   };
@@ -60,17 +59,17 @@ function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Security Audit & Hardening" />
+      <SectionHeader num="00" title="Production Deploy" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        Финальная проверка безопасности согласно разделу 3 Конституции KURUTA.
+        Production-деплой для KURUTA с multi-stage builds, CI/CD, мониторингом и бэкапами.
       </p>
 
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Пунктов проверено", value: "45+" },
-          { label: "Penetration тестов", value: "15" },
-          { label: "Уязвимостей", value: "0" },
-          { label: "Статус", value: "PASSED" },
+          { label: "Dockerfiles", value: "3" },
+          { label: "CI/CD Jobs", value: "5" },
+          { label: "Backup Scripts", value: "2" },
+          { label: "Docs", value: "2" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
@@ -80,26 +79,28 @@ function OverviewSection() {
       </div>
 
       <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✅ Результат аудита</h4>
-        <p className="text-sm text-[#444] mb-3">
-          Все пункты чек-листа из раздела 3 Конституции закрыты. Система готова к production deployment.
-        </p>
-        <div className="flex gap-2">
-          <span className="px-3 py-1 bg-[#2D9B6E] text-white text-sm font-medium rounded-lg">PASSED</span>
-          <span className="px-3 py-1 bg-white border border-[#E5E5E5] text-sm rounded-lg">v1.0.0</span>
-        </div>
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Что реализовано</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• <strong>Multi-stage builds</strong> для минимизации размера образов</li>
+          <li>• <strong>Non-root user</strong> для безопасности</li>
+          <li>• <strong>Healthchecks</strong> для всех сервисов</li>
+          <li>• <strong>Resource limits</strong> для предотвращения OOM</li>
+          <li>• <strong>CI/CD pipeline</strong> с автоматическим деплоем</li>
+          <li>• <strong>Автоматические бэкапы</strong> PostgreSQL и S3</li>
+          <li>• <strong>Мониторинг</strong> через health endpoints и Sentry</li>
+          <li>• <strong>Полная документация</strong> DEPLOY.md и RUNBOOK.md</li>
+        </ul>
       </Card>
 
       <div className="space-y-3">
         {[
-          { task: "Helmet (CSP) усилен", status: "done" as const },
-          { task: "CORS whitelist настроен", status: "done" as const },
-          { task: "Rate limiting настроен", status: "done" as const },
-          { task: "Валидация всех input через Zod", status: "done" as const },
-          { task: "SSRF-защита реализована", status: "done" as const },
-          { task: "Логи проверены (нет чувствительных данных)", status: "done" as const },
-          { task: "Penetration tests написаны", status: "done" as const },
-          { task: "SECURITY.md создан", status: "done" as const },
+          { task: "docker-compose.prod.yml", status: "done" as const },
+          { task: "Multi-stage Dockerfiles (API, Web, Admin)", status: "done" as const },
+          { task: "Caddyfile для reverse proxy", status: "done" as const },
+          { task: "GitHub Actions CI/CD pipeline", status: "done" as const },
+          { task: "Backup scripts (PostgreSQL, S3)", status: "done" as const },
+          { task: "DEPLOY.md", status: "done" as const },
+          { task: "RUNBOOK.md", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -118,206 +119,134 @@ function OverviewSection() {
   );
 }
 
-function AuthSection() {
+function DockerSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Аутентификация" />
+      <SectionHeader num="01" title="Docker Configuration" />
       
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Пароли</h4>
-        <div className="space-y-3">
-          {[
-            { item: "Алгоритм: Argon2id", status: "done" as const },
-            { item: "memoryCost: 65536 (64 MB)", status: "done" as const },
-            { item: "timeCost: 3, parallelism: 4", status: "done" as const },
-            { item: "Уникальная соль на запись", status: "done" as const },
-            { item: "Минимальная длина: 8 символов", status: "done" as const },
-            { item: "Требования: uppercase, lowercase, digit", status: "done" as const },
-          ].map((item) => (
-            <div key={item.item} className="flex items-center justify-between">
-              <span className="text-sm text-[#444]">{item.item}</span>
-              <StatusBadge status={item.status} />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">JWT Tokens</h4>
-        <div className="space-y-3">
-          {[
-            { item: "Access token: 15 минут", status: "done" as const },
-            { item: "Refresh token: 7 дней", status: "done" as const },
-            { item: "Refresh rotation при каждом использовании", status: "done" as const },
-            { item: "httpOnly Secure SameSite=Strict cookie", status: "done" as const },
-            { item: "При утечке — отзыв всей семьи токенов", status: "done" as const },
-          ].map((item) => (
-            <div key={item.item} className="flex items-center justify-between">
-              <span className="text-sm text-[#444]">{item.item}</span>
-              <StatusBadge status={item.status} />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">2FA (TOTP)</h4>
-        <div className="space-y-3">
-          {[
-            { item: "Обязателен для финансовых операций", status: "done" as const },
-            { item: "Обязателен для смены реквизитов", status: "done" as const },
-            { item: "Алгоритм: TOTP (RFC 6238)", status: "done" as const },
-          ].map((item) => (
-            <div key={item.item} className="flex items-center justify-between">
-              <span className="text-sm text-[#444]">{item.item}</span>
-              <StatusBadge status={item.status} />
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card>
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Rate Limiting</h4>
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="border border-[#E5E5E5] rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Auth endpoints</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">5/мин</p>
-          </div>
-          <div className="border border-[#E5E5E5] rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">API endpoints</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">100/мин</p>
-          </div>
-          <div className="border border-[#E5E5E5] rounded-lg p-4">
-            <p className="text-xs text-[#666] mb-1">Sensitive ops</p>
-            <p className="text-2xl font-bold text-[#1A1A1A]">Custom</p>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function DataSection() {
-  return (
-    <div>
-      <SectionHeader num="02" title="Защита данных" />
-      
-      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ SQL Injection Protection</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Только Prisma parameterized queries</li>
-          <li>• Raw SQL запрещён</li>
-          <li>• Валидация всех входных данных через Zod</li>
-          <li>• Penetration tests пройдены</li>
-        </ul>
-      </Card>
-
-      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ XSS Protection</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• React автоматически экранирует</li>
-          <li>• CSP restricts inline scripts</li>
-          <li>• Helmet с strict CSP</li>
-          <li>• Penetration tests пройдены</li>
-        </ul>
-      </Card>
-
-      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ CSRF Protection</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• SameSite cookies (Strict)</li>
-          <li>• CSRF tokens для state-changing операций</li>
-          <li>• Origin validation</li>
-        </ul>
-      </Card>
-
-      <Card className="border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚫 ЗАПРЕЩЕНО логировать</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• ❌ Пароли</li>
-          <li>• ❌ Токены (access, refresh)</li>
-          <li>• ❌ Полные номера карт</li>
-          <li>• ❌ CVV коды</li>
-          <li>• ❌ API ключи и секреты</li>
-        </ul>
-      </Card>
-    </div>
-  );
-}
-
-function NetworkSection() {
-  return (
-    <div>
-      <SectionHeader num="03" title="Сетевая безопасность" />
-      
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Helmet + CSP</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Multi-stage Build</h4>
         <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", API_URL],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      objectSrc: ["'none'"],
-      mediaSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-    },
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true,
-  },
-  referrerPolicy: {
-    policy: "strict-origin-when-cross-origin",
-  },
-  noSniff: {},
-  xssFilter: {},
-})`}
+{`# Stage 1: Build
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Production
+FROM node:20-alpine AS production
+WORKDIR /app
+RUN addgroup -g 1001 -S nodejs && \\
+    adduser -S kuruta -u 1001
+COPY --from=builder --chown=kuruta:nodejs /app/dist ./dist
+USER kuruta
+HEALTHCHECK --interval=30s --timeout=10s \\
+  CMD curl -f http://localhost:4000/health || exit 1
+CMD ["node", "dist/main.js"]`}
         </pre>
       </Card>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">CORS</h4>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#444]">Whitelist доменов</span>
-            <StatusBadge status="done" />
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Resource Limits</h4>
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="border border-[#E5E5E5] rounded-lg p-4">
+            <h5 className="font-semibold text-[#1A1A1A] mb-2">API</h5>
+            <div className="text-sm text-[#666]">
+              <p>CPU: 2 cores</p>
+              <p>Memory: 2 GB</p>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#444]">НЕ используется `*`</span>
-            <StatusBadge status="done" />
+          <div className="border border-[#E5E5E5] rounded-lg p-4">
+            <h5 className="font-semibold text-[#1A1A1A] mb-2">Web</h5>
+            <div className="text-sm text-[#666]">
+              <p>CPU: 2 cores</p>
+              <p>Memory: 2 GB</p>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-[#444]">Credentials: true</span>
-            <StatusBadge status="done" />
+          <div className="border border-[#E5E5E5] rounded-lg p-4">
+            <h5 className="font-semibold text-[#1A1A1A] mb-2">PostgreSQL</h5>
+            <div className="text-sm text-[#666]">
+              <p>CPU: 2 cores</p>
+              <p>Memory: 4 GB</p>
+            </div>
           </div>
         </div>
       </Card>
 
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ SSRF Protection</h4>
-        <p className="text-sm text-[#444] mb-3">Блокировка запросов к внутренним IP:</p>
-        <div className="grid grid-cols-2 gap-2">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Безопасность</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Non-root user (kuruta:1001)</li>
+          <li>• Healthchecks для всех сервисов</li>
+          <li>• Resource limits для предотвращения OOM</li>
+          <li>• Ports exposed только на localhost (127.0.0.1)</li>
+          <li>• Network isolation через kuruta-network</li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
+function CICDSection() {
+  return (
+    <div>
+      <SectionHeader num="02" title="CI/CD Pipeline" />
+      
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Pipeline Stages</h4>
+        <div className="space-y-4">
           {[
-            "127.0.0.0/8",
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "192.168.0.0/16",
-            "169.254.0.0/16",
-            "::1 (IPv6)",
-          ].map((ip) => (
-            <code key={ip} className="text-xs font-mono text-[#1A1A1A] bg-white px-2 py-1 rounded border border-[#E5E5E5]">
-              {ip}
-            </code>
+            { stage: "1. Test & Lint", desc: "npm test, npm run lint, npm run typecheck" },
+            { stage: "2. Build & Push", desc: "Docker build, push to GHCR" },
+            { stage: "3. Deploy Staging", desc: "Deploy to staging server (develop branch)" },
+            { stage: "4. Deploy Production", desc: "Deploy to production server (main branch)" },
+            { stage: "5. Security Scan", desc: "Trivy vulnerability scanner, npm audit" },
+          ].map((item) => (
+            <div key={item.stage} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#FF6B35] font-bold text-sm">{item.stage[0]}</span>
+              </div>
+              <div>
+                <h5 className="font-semibold text-[#1A1A1A]">{item.stage}</h5>
+                <p className="text-sm text-[#666]">{item.desc}</p>
+              </div>
+            </div>
           ))}
         </div>
+      </Card>
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Deployment Strategy</h4>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="border border-[#6366F1]/30 bg-[#6366F1]/5 rounded-lg p-4">
+            <h5 className="font-semibold text-[#6366F1] mb-2">Staging</h5>
+            <ul className="text-sm text-[#444] space-y-1">
+              <li>• Branch: develop</li>
+              <li>• Auto-deploy on push</li>
+              <li>• Full deployment</li>
+            </ul>
+          </div>
+          <div className="border border-[#2D9B6E]/30 bg-[#2D9B6E]/5 rounded-lg p-4">
+            <h5 className="font-semibold text-[#2D9B6E] mb-2">Production</h5>
+            <ul className="text-sm text-[#444] space-y-1">
+              <li>• Branch: main</li>
+              <li>• Auto-deploy on push</li>
+              <li>• Zero downtime deployment</li>
+              <li>• Backup before deploy</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Zero Downtime Deployment</h4>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`# Update only specific services
+docker-compose -f docker-compose.prod.yml \\
+  up -d --no-deps --build api web admin`}
+        </pre>
       </Card>
     </div>
   );
@@ -326,196 +255,166 @@ function NetworkSection() {
 function MonitoringSection() {
   return (
     <div>
-      <SectionHeader num="04" title="Мониторинг и аудит" />
+      <SectionHeader num="03" title="Мониторинг" />
       
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Audit Log</h4>
-        <p className="text-sm text-[#666] mb-4">Все значимые действия логируются:</p>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "user.login",
-            "user.logout",
-            "user.refresh",
-            "transaction.create",
-            "payout.requested",
-            "dispute.opened",
-            "dispute.resolved",
-            "moderation.approved",
-            "security.refresh_token_reuse",
-          ].map((action) => (
-            <code key={action} className="px-2 py-1 bg-[#F5F5F0] border border-[#E5E5E5] rounded text-xs font-mono text-[#1A1A1A]">
-              {action}
-            </code>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Sensitive Data Masker</h4>
-        <p className="text-sm text-[#666] mb-4">Автоматическое маскирование перед логированием:</p>
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Health Endpoints</h4>
         <div className="space-y-2">
           {[
-            { pattern: "password", replacement: "***MASKED***" },
-            { pattern: "token", replacement: "***MASKED***" },
-            { pattern: "card_number", replacement: "****-****-****-****" },
-            { pattern: "cvv", replacement: "***" },
-            { pattern: "email", replacement: "u***@example.com" },
-            { pattern: "phone", replacement: "+7***12" },
+            { endpoint: "/api/v1/health", desc: "API health check" },
+            { endpoint: "/health", desc: "Database health check" },
+            { endpoint: "/minio/health/live", desc: "MinIO health check" },
           ].map((item) => (
-            <div key={item.pattern} className="flex items-center gap-3">
-              <code className="text-xs font-mono text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded min-w-[120px]">
-                {item.pattern}
+            <div key={item.endpoint} className="flex items-center gap-3">
+              <code className="text-xs font-mono text-[#FF6B35] bg-[#FF6B35]/5 px-2 py-1 rounded">
+                {item.endpoint}
               </code>
-              <span className="text-[#CCC]">→</span>
-              <code className="text-xs font-mono text-[#E63946] bg-[#E63946]/5 px-2 py-1 rounded">
-                {item.replacement}
-              </code>
+              <span className="text-sm text-[#666]">{item.desc}</span>
             </div>
           ))}
         </div>
       </Card>
 
-      <Card>
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Антифрод-сигналы</h4>
-        <div className="space-y-2">
-          {[
-            "Дубликаты device fingerprint",
-            "Одинаковые реквизиты вывода",
-            "Подозрительно быстрое выполнение",
-            "Повторяющиеся скриншоты",
-            "Резкий рост аудитории",
-            "Нестандартная активность",
-          ].map((signal) => (
-            <div key={signal} className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-[#FF6B35]"></div>
-              <span className="text-sm text-[#444]">{signal}</span>
-            </div>
-          ))}
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Sentry Integration</h4>
+        <p className="text-sm text-[#666] mb-3">Все ошибки автоматически отправляются в Sentry:</p>
+        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`# .env
+SENTRY_DSN=https://<key>@sentry.io/<project>
+
+# Автоматическая отправка ошибок
+# Структурированные JSON логи
+# Performance monitoring`}
+        </pre>
+      </Card>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Structured Logging</h4>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`{
+  "level": "info",
+  "message": "User logged in",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "userId": "uuid",
+  "ip": "192.168.1.1",
+  "userAgent": "Mozilla/5.0..."
+}`}
+        </pre>
+      </Card>
+    </div>
+  );
+}
+
+function BackupsSection() {
+  return (
+    <div>
+      <SectionHeader num="04" title="Бэкапы" />
+      
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">PostgreSQL Backups</h4>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Frequency</span>
+            <span className="text-sm font-medium">Every 6 hours</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Retention</span>
+            <span className="text-sm font-medium">30 days</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Format</span>
+            <span className="text-sm font-medium">SQL dump (gzipped)</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Storage</span>
+            <span className="text-sm font-medium">Local + S3</span>
+          </div>
         </div>
       </Card>
-    </div>
-  );
-}
 
-function PentestSection() {
-  return (
-    <div>
-      <SectionHeader num="05" title="Penetration Tests" />
-      
-      <div className="space-y-4">
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">SQL Injection</h4>
-            <StatusBadge status="done" />
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">S3 Backups</h4>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Frequency</span>
+            <span className="text-sm font-medium">Daily at 2:00 AM</span>
           </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на SQL-инъекцию в email поле</li>
-            <li>• Тест на SQL-инъекцию в search параметрах</li>
-            <li>• Тест на SQL-инъекцию в JSON полях</li>
-            <li>• <strong>Результат</strong>: Prisma защищает, все тесты проходят</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">XSS</h4>
-            <StatusBadge status="done" />
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Retention</span>
+            <span className="text-sm font-medium">30 days</span>
           </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на XSS в displayName</li>
-            <li>• Тест на XSS в campaign description</li>
-            <li>• <strong>Результат</strong>: React экранирует, CSP блокирует</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">Access Control (IDOR)</h4>
-            <StatusBadge status="done" />
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Format</span>
+            <span className="text-sm font-medium">Tar archive (gzipped)</span>
           </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на доступ к чужой кампании</li>
-            <li>• Тест на обновление чужой кампании</li>
-            <li>• Тест на оплату чужой кампании</li>
-            <li>• <strong>Результат</strong>: RBAC работает, возвращается 403</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">Refresh Token Reuse</h4>
-            <StatusBadge status="done" />
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-[#444]">Storage</span>
+            <span className="text-sm font-medium">Local + External S3</span>
           </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на повторное использование refresh token</li>
-            <li>• <strong>Результат</strong>: Все сессии отзываются, audit log записывается</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">Rate Limiting</h4>
-            <StatusBadge status="done" />
-          </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на превышение лимита login attempts</li>
-            <li>• <strong>Результат</strong>: После 5 попыток — блокировка (429)</li>
-          </ul>
-        </Card>
-
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-semibold text-[#1A1A1A]">SSRF</h4>
-            <StatusBadge status="done" />
-          </div>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Тест на запросы к внутренним IP</li>
-            <li>• <strong>Результат</strong>: Middleware возвращает 403</li>
-          </ul>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function ChecklistSection() {
-  return (
-    <div>
-      <SectionHeader num="06" title="Security Checklist" />
-      
-      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✅ Все пункты закрыты</h4>
-        <p className="text-sm text-[#444]">
-          Раздел 3 Конституции полностью реализован и проверен.
-        </p>
+        </div>
       </Card>
 
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Manual Backup</h4>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`# Backup PostgreSQL
+docker exec kuruta-backup /usr/local/bin/backup-postgres.sh
+
+# Backup S3
+docker exec kuruta-backup /usr/local/bin/backup-s3.sh`}
+        </pre>
+      </Card>
+    </div>
+  );
+}
+
+function DocsSection() {
+  return (
+    <div>
+      <SectionHeader num="05" title="Документация" />
+      
       <div className="space-y-4">
         <Card>
-          <h4 className="font-semibold text-[#1A1A1A] mb-3">Документация</h4>
-          <div className="space-y-2">
-            {[
-              { file: "SECURITY.md", desc: "Политика безопасности" },
-              { file: "SECURITY_AUDIT.md", desc: "Результаты аудита" },
-              { file: "apps/api/test/penetration.e2e-spec.ts", desc: "Penetration tests" },
-            ].map((item) => (
-              <div key={item.file} className="flex items-center gap-3">
-                <code className="text-xs font-mono text-[#FF6B35] bg-[#FF6B35]/5 px-2 py-1 rounded">
-                  {item.file}
-                </code>
-                <span className="text-sm text-[#666]">{item.desc}</span>
-              </div>
-            ))}
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-[#6366F1]/10 flex items-center justify-center">
+              <span className="text-[#6366F1] font-bold">📖</span>
+            </div>
+            <h3 className="font-display font-semibold text-[#1A1A1A]">DEPLOY.md</h3>
           </div>
+          <p className="text-sm text-[#666] mb-3">Полное руководство по деплою:</p>
+          <ul className="text-sm text-[#444] space-y-1">
+            <li>• Требования к серверу</li>
+            <li>• Подготовка сервера</li>
+            <li>• Конфигурация</li>
+            <li>• Деплой</li>
+            <li>• Мониторинг</li>
+            <li>• Бэкапы</li>
+            <li>• Обновление и откат</li>
+          </ul>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-lg bg-[#E63946]/10 flex items-center justify-center">
+              <span className="text-[#E63946] font-bold">🚨</span>
+            </div>
+            <h3 className="font-display font-semibold text-[#1A1A1A]">RUNBOOK.md</h3>
+          </div>
+          <p className="text-sm text-[#666] mb-3">Руководство для операций:</p>
+          <ul className="text-sm text-[#444] space-y-1">
+            <li>• Ежедневные операции</li>
+            <li>• Мониторинг и метрики</li>
+            <li>• Обработка инцидентов (5 сценариев)</li>
+            <li>• Плановое обслуживание</li>
+            <li>• Аварийное восстановление</li>
+          </ul>
         </Card>
 
         <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
           <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
           <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Все пункты чек-листа из раздела 3 Конституции закрыты</li>
-            <li>• Penetration tests написаны и пройдены</li>
-            <li>• SECURITY.md создан</li>
-            <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">security: hardening and audit</code></li>
+            <li>• Проект собирается и запускается в production-конфигурации</li>
+            <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">chore: production deploy and monitoring</code></li>
           </ul>
         </Card>
       </div>
@@ -525,12 +424,11 @@ function ChecklistSection() {
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
-  auth: AuthSection,
-  data: DataSection,
-  network: NetworkSection,
+  docker: DockerSection,
+  cicd: CICDSection,
   monitoring: MonitoringSection,
-  pentest: PentestSection,
-  checklist: ChecklistSection,
+  backups: BackupsSection,
+  docs: DocsSection,
 };
 
 export default function App() {
@@ -550,7 +448,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Security Audit</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Production Deploy</p>
             </div>
           </div>
 
@@ -568,8 +466,8 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">Hardening Complete</span>
-            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">PASSED</span>
+            <span className="text-xs text-[#999] font-mono">Production Ready</span>
+            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">DEPLOYED</span>
           </div>
         </div>
       </header>

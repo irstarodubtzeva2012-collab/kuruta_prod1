@@ -1,0 +1,256 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # ─── Test & Lint ─────────────────────────────────────────────────
+  test:
+    name: Test & Lint
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: kuruta
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: kuruta_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run linter
+        run: npm run lint
+      
+      - name: Type check
+        run: npm run typecheck
+      
+      - name: Run tests
+        run: npm test
+        env:
+          DATABASE_URL: postgresql://kuruta:test@localhost:5432/kuruta_test
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_secret_key_for_ci
+          JWT_REFRESH_SECRET: test_refresh_secret_for_ci
+      
+      - name: Run e2e tests
+        run: npm run test:e2e
+        env:
+          DATABASE_URL: postgresql://kuruta:test@localhost:5432/kuruta_test
+          REDIS_URL: redis://localhost:6379
+          JWT_ACCESS_SECRET: test_secret_key_for_ci
+          JWT_REFRESH_SECRET: test_refresh_secret_for_ci
+
+  # ─── Build & Push ────────────────────────────────────────────────
+  build:
+    name: Build & Push
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+      
+      - name: Build and push API
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/api/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build and push Web
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/web/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/web:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build and push Admin
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./apps/admin/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/admin:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ─── Deploy to Staging ──────────────────────────────────────────
+  deploy-staging:
+    name: Deploy to Staging
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to staging server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.STAGING_HOST }}
+          username: ${{ secrets.STAGING_USER }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /opt/kuruta
+            
+            # Pull latest images
+            docker-compose -f docker-compose.prod.yml pull
+            
+            # Update .env
+            echo "${{ secrets.STAGING_ENV }}" > .env
+            
+            # Deploy
+            docker-compose -f docker-compose.prod.yml up -d
+            
+            # Wait for health checks
+            sleep 30
+            
+            # Check health
+            curl -f http://localhost:4000/health || exit 1
+            
+            echo "Staging deployment completed successfully!"
+
+  # ─── Deploy to Production ───────────────────────────────────────
+  deploy-production:
+    name: Deploy to Production
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PRODUCTION_HOST }}
+          username: ${{ secrets.PRODUCTION_USER }}
+          key: ${{ secrets.PRODUCTION_SSH_KEY }}
+          script: |
+            cd /opt/kuruta
+            
+            # Create backup before deployment
+            ./scripts/backup-postgres.sh
+            
+            # Pull latest images
+            docker-compose -f docker-compose.prod.yml pull
+            
+            # Update .env
+            echo "${{ secrets.PRODUCTION_ENV }}" > .env
+            
+            # Deploy with zero downtime
+            docker-compose -f docker-compose.prod.yml up -d --no-deps --build api web admin
+            
+            # Wait for health checks
+            sleep 30
+            
+            # Check health
+            curl -f http://localhost:4000/health || exit 1
+            
+            echo "Production deployment completed successfully!"
+      
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "Production deployment successful!"
+          # Здесь можно добавить отправку уведомления в Slack/Telegram
+
+  # ─── Security Scan ──────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=high
+        continue-on-error: false

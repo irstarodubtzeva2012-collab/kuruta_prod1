@@ -1,0 +1,130 @@
+# Caddyfile для KURUTA
+# Reverse proxy для API, Web и Admin
+
+# Глобальные настройки
+{
+    # Автоматический HTTPS через Let's Encrypt
+    email admin@kuruta.dev
+    
+    # Production настройки
+    servers {
+        protocols h1 h2 h3
+    }
+}
+
+# Production домен
+kuruta.dev {
+    # API
+    handle /api/* {
+        reverse_proxy api:4000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    
+    # Admin Panel
+    handle /admin/* {
+        reverse_proxy admin:3001 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    
+    # Web (по умолчанию)
+    handle {
+        reverse_proxy web:3000 {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto {scheme}
+        }
+    }
+    
+    # Security headers
+    header {
+        # HSTS
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        
+        # XSS Protection
+        X-XSS-Protection "1; mode=block"
+        
+        # Content Type Protection
+        X-Content-Type-Options "nosniff"
+        
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+        
+        # Permissions Policy
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        
+        # Remove X-Powered-By
+        -X-Powered-By
+        -Server
+    }
+    
+    # Logging
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+    }
+}
+
+# Staging домен
+staging.kuruta.dev {
+    # API
+    handle /api/* {
+        reverse_proxy api:4000
+    }
+    
+    # Admin Panel
+    handle /admin/* {
+        reverse_proxy admin:3001
+    }
+    
+    # Web
+    handle {
+        reverse_proxy web:3000
+    }
+    
+    # Security headers (same as production)
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-XSS-Protection "1; mode=block"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -X-Powered-By
+        -Server
+    }
+    
+    log {
+        output file /var/log/caddy/staging-access.log {
+            roll_size 100mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+    }
+}
+
+# Local development (опционально)
+:80 {
+    handle /api/* {
+        reverse_proxy api:4000
+    }
+    
+    handle /admin/* {
+        reverse_proxy admin:3001
+    }
+    
+    handle {
+        reverse_proxy web:3000
+    }
+}
