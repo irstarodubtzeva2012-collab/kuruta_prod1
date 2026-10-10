@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ─── lint-staged: lint only changed files ─────────────────────────
+npx lint-staged
+
+# ─── gitleaks: block commits with secrets ─────────────────────────
+npx gitleaks protect --staged --verbose

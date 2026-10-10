@@ -1,0 +1,50 @@
+title = "KURUTA gitleaks config"
+
+# ─── Extend default rules ─────────────────────────────────────────
+[extend]
+useDefault = true
+
+# ─── Allowlist ─────────────────────────────────────────────────────
+[allowlist]
+description = "Global allowlist"
+paths = [
+  '''node_modules''',
+  '''\.git''',
+  '''dist''',
+  '''build''',
+  '''\.next''',
+  '''coverage''',
+  '''\.env\.example''',
+  '''gitleaks\.toml''',
+]
+
+# ─── Custom rules for KURUTA ──────────────────────────────────────
+[[rules]]
+id = "kuruta-jwt-secret"
+description = "KURUTA JWT secret detected"
+regex = '''(?i)(JWT_ACCESS_SECRET|JWT_REFRESH_SECRET)\s*=\s*["']?[A-Za-z0-9_\-]{20,}["']?'''
+tags = ["jwt", "secret", "kuruta"]
+
+[[rules]]
+id = "kuruta-database-url"
+description = "KURUTA database URL with credentials"
+regex = '''postgresql://[^/\s]+:[^/\s]+@[^/\s]+/[^/\s]+'''
+tags = ["database", "credentials", "kuruta"]
+
+[[rules]]
+id = "kuruta-redis-url"
+description = "KURUTA Redis URL with password"
+regex = '''redis://:[^@\s]+@[^/\s]+'''
+tags = ["redis", "credentials", "kuruta"]
+
+[[rules]]
+id = "kuruta-s3-secret"
+description = "KURUTA S3 secret key"
+regex = '''(?i)(S3_SECRET_KEY|MINIO_ROOT_PASSWORD)\s*=\s*["']?[A-Za-z0-9_\-]{10,}["']?'''
+tags = ["s3", "secret", "kuruta"]
+
+[[rules]]
+id = "generic-password-assignment"
+description = "Generic password assignment"
+regex = '''(?i)(password|passwd|pwd)\s*[:=]\s*["'][^"']{8,}["']'''
+tags = ["password", "generic"]

@@ -1,0 +1,404 @@
+// ─────────────────────────────────────────────────────────────────
+// KURUTA — Prisma Schema
+// Единственная БД: PostgreSQL 16
+// ─────────────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────
+
+enum UserRole {
+  guest
+  creator
+  ambassador
+  platform_owner
+  moderator
+  finance
+  admin
+  superadmin
+}
+
+enum UserStatus {
+  active
+  limited
+  blocked
+  deleted
+}
+
+enum AmbassadorApplicationStatus {
+  draft
+  pending
+  needs_info
+  approved
+  rejected
+  suspended
+}
+
+enum CampaignStatus {
+  draft
+  awaiting_payment
+  pending_review
+  approved
+  active
+  paused
+  completed
+  cancelled
+}
+
+enum TaskStatus {
+  available
+  taken
+  in_progress
+  proof_submitted
+  reviewing
+  approved
+  paid
+  rejected
+  resubmit_required
+  overdue
+  cancelled
+  disputed
+}
+
+enum AdSlotStatus {
+  draft
+  pending_review
+  published
+  booked
+  in_progress
+  confirming
+  completed
+  closed
+}
+
+enum DealStatus {
+  created
+  paid
+  in_progress
+  confirming
+  completed
+  disputed
+  cancelled
+}
+
+enum PayoutStatus {
+  requested
+  checking
+  processing
+  paid
+  error
+  cancelled
+}
+
+enum DisputeStatus {
+  opened
+  investigating
+  resolved_creator
+  resolved_executor
+  resolved_partial
+  closed
+}
+
+enum FinancialTransactionType {
+  deposit
+  reserve
+  release
+  reward
+  fee
+  payout
+  refund
+  adjustment
+}
+
+enum FinancialTransactionStatus {
+  pending
+  completed
+  failed
+  refunded
+}
+
+// ─── User ─────────────────────────────────────────────────────────
+
+model User {
+  id            String      @id @default(uuid())
+  email         String      @unique
+  passwordHash  String
+  phone         String?     @unique
+  displayName   String?
+  avatarUrl     String?
+  status        UserStatus  @default(active)
+  totpSecret    String?     // encrypted
+  totpEnabled   Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  roles         UserRole[]
+  applications  AmbassadorApplication[]
+  campaigns     Campaign[]
+  tasks         Task[]
+  adSlots       AdSlot[]
+  deals         Deal[]
+  transactions  FinancialTransaction[]
+  payouts       Payout[]
+  disputes      Dispute[]
+  notifications Notification[]
+  sessions      Session[]
+
+  @@map("users")
+}
+
+// ─── User Roles (many-to-many) ────────────────────────────────────
+
+model UserRole {
+  id       String   @id @default(uuid())
+  userId   String
+  role     UserRole
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantedAt DateTime @default(now())
+  grantedBy String?  // userId of admin who granted
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+// ─── Ambassador Application ──────────────────────────────────────
+
+model AmbassadorApplication {
+  id            String                      @id @default(uuid())
+  userId        String
+  status        AmbassadorApplicationStatus @default(draft)
+  socialLinks   Json?                       // jsonb
+  audienceSize  Int?
+  niches        String[]                    // array
+  documents     Json?                       // jsonb — uploaded files metadata
+  reviewedBy    String?                     // moderator userId
+  reviewedAt    DateTime?
+  rejectionReason String?
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ambassador_applications")
+}
+
+// ─── Campaign ─────────────────────────────────────────────────────
+
+model Campaign {
+  id            String          @id @default(uuid())
+  creatorId     String
+  title         String
+  description   String
+  status        CampaignStatus  @default(draft)
+  budget        Decimal         @db.Decimal(14, 2)
+  taskCount     Int
+  taskReward    Decimal         @db.Decimal(14, 2)
+  requirements  Json?           // jsonb
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  creator       User   @relation(fields: [creatorId], references: [id])
+  tasks         Task[]
+
+  @@map("campaigns")
+}
+
+// ─── Task ─────────────────────────────────────────────────────────
+
+model Task {
+  id              String      @id @default(uuid())
+  campaignId      String
+  ambassadorId    String?
+  status          TaskStatus  @default(available)
+  proofData       Json?       // jsonb — screenshots, links, etc.
+  reviewNotes     String?
+  reviewedBy      String?     // moderator userId
+  reviewedAt      DateTime?
+  takenAt         DateTime?
+  submittedAt     DateTime?
+  paidAt          DateTime?
+  dueAt           DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  campaign        Campaign @relation(fields: [campaignId], references: [id])
+  ambassador      User?    @relation(fields: [ambassadorId], references: [id])
+
+  @@map("tasks")
+}
+
+// ─── Ad Slot ──────────────────────────────────────────────────────
+
+model AdSlot {
+  id              String        @id @default(uuid())
+  ownerId         String
+  title           String
+  description     String
+  status          AdSlotStatus  @default(draft)
+  platform        String        // telegram, instagram, youtube, etc.
+  platformUrl     String
+  audienceSize    Int
+  pricePerDay     Decimal       @db.Decimal(14, 2)
+  currency        String        @default("RUB")
+  mediaKit        Json?         // jsonb
+  availability    Json?         // jsonb — calendar
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  owner           User   @relation(fields: [ownerId], references: [id])
+  deals           Deal[]
+
+  @@map("ad_slots")
+}
+
+// ─── Deal (booking) ──────────────────────────────────────────────
+
+model Deal {
+  id              String      @id @default(uuid())
+  adSlotId        String
+  buyerId         String      // creator userId
+  status          DealStatus  @default(created)
+  startDate       DateTime
+  endDate         DateTime
+  totalAmount     Decimal     @db.Decimal(14, 2)
+  commission      Decimal     @db.Decimal(14, 2) // 10%
+  contentBrief    String?
+  proofData       Json?       // jsonb
+  confirmedAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  adSlot          AdSlot @relation(fields: [adSlotId], references: [id])
+  buyer           User   @relation(fields: [buyerId], references: [id])
+
+  @@map("deals")
+}
+
+// ─── Financial Transaction (double-entry journal) ─────────────────
+
+model FinancialTransaction {
+  id                String                    @id @default(uuid())
+  idempotencyKey    String                    @unique
+  type              FinancialTransactionType
+  userId            String
+  amount            Decimal                   @db.Decimal(14, 2) // always positive
+  currency          String                    @default("RUB")
+  status            FinancialTransactionStatus @default(pending)
+  relatedEntityType String?                   // campaign, task, ad_slot, deal, dispute, payout
+  relatedEntityId   String?
+  description       String?
+  metadata          Json?                     // jsonb
+  createdAt         DateTime                  @default(now())
+
+  user              User @relation(fields: [userId], references: [id])
+
+  @@map("financial_transactions")
+}
+
+// ─── Payout ───────────────────────────────────────────────────────
+
+model Payout {
+  id              String        @id @default(uuid())
+  userId          String
+  amount          Decimal       @db.Decimal(14, 2)
+  currency        String        @default("RUB")
+  status          PayoutStatus  @default(requested)
+  paymentMethod   String?       // card, sbp, etc.
+  requisites      Json?         // jsonb — masked
+  processedBy     String?       // finance userId
+  processedAt     DateTime?
+  errorDetails    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User @relation(fields: [userId], references: [id])
+
+  @@map("payouts")
+}
+
+// ─── Dispute ──────────────────────────────────────────────────────
+
+model Dispute {
+  id              String          @id @default(uuid())
+  openedBy        String
+  relatedType     String          // task, deal
+  relatedId       String
+  status          DisputeStatus   @default(opened)
+  reason          String
+  evidence        Json?           // jsonb
+  resolution      String?
+  resolvedBy      String?         // moderator userId
+  resolvedAt      DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  opener          User @relation(fields: [openedBy], references: [id])
+
+  @@map("disputes")
+}
+
+// ─── Session (refresh tokens) ─────────────────────────────────────
+
+model Session {
+  id          String    @id @default(uuid())
+  userId      String
+  refreshToken String   @unique // hashed
+  userAgent   String?
+  ip          String?
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ─── Notification ─────────────────────────────────────────────────
+
+model Notification {
+  id          String    @id @default(uuid())
+  userId      String
+  type        String    // enum-like: task_assigned, payout_processed, etc.
+  title       String
+  body        String
+  data        Json?     // jsonb — deep link, entity refs
+  readAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+// ─── Audit Log (append-only) ─────────────────────────────────────
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String
+  before      Json?    // jsonb
+  after       Json?    // jsonb
+  ip          String?
+  userAgent   String?
+  timestamp   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+  @@map("audit_log")
+}

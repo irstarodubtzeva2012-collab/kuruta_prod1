@@ -1,5 +1,48 @@
+# Dependencies
 node_modules/
-.next/
+.pnp
+.pnp.js
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
 dist/
 build/
+.next/
+out/
+
+# Prisma
+packages/database/prisma/migrations/
+packages/database/node_modules/
+
+# Testing
+coverage/
+*.lcov
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Turbo
+.turbo/
+
+# Misc
+*.tsbuildinfo
+.cache/
