@@ -1,23 +1,13 @@
-// ─────────────────────────────────────────────────────────────────
-// KURUTA Admin — Root Layout
-// ─────────────────────────────────────────────────────────────────
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import { AuthProvider } from '@/contexts/AuthContext';
+import './globals.css';
 
-import type { Metadata } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
-
-const inter = Inter({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-inter",
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-space-grotesk",
-});
+const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
 export const metadata: Metadata = {
-  title: "KURUTA Admin — Панель модерации",
-  description: "Панель администрирования и модерации KURUTA",
+  title: 'KURUTA Admin Panel',
+  description: 'Административная панель KURUTA',
 };
 
 export default function RootLayout({
@@ -27,8 +17,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body className={`${inter.variable} ${spaceGrotesk.variable} font-sans`}>
-        {children}
+      <body className={inter.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
