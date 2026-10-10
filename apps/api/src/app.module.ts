@@ -11,6 +11,7 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
+import { FinanceModule } from "./finance/finance.module";
 
 // ─── Environment validation schema ──────────────────────────────
 const envSchema = z.object({
@@ -50,6 +51,7 @@ const envSchema = z.object({
     // ─── Feature Modules ──────────────────────────────────────────
     AuthModule,
     UsersModule,
+    FinanceModule,
   ],
   controllers: [AppController],
   providers: [

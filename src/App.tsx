@@ -2,14 +2,13 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "registration", num: "01", title: "Регистрация" },
-  { id: "login", num: "02", title: "Вход" },
-  { id: "jwt", num: "03", title: "JWT & Refresh" },
-  { id: "2fa", num: "04", title: "2FA (TOTP)" },
-  { id: "users", num: "05", title: "Профиль" },
-  { id: "guards", num: "06", title: "Guards" },
-  { id: "security", num: "07", title: "Безопасность" },
-  { id: "tests", num: "08", title: "Тесты" },
+  { id: "balance", num: "01", title: "Баланс" },
+  { id: "operations", num: "02", title: "Операции" },
+  { id: "idempotency", num: "03", title: "Идемпотентность" },
+  { id: "race", num: "04", title: "Race Conditions" },
+  { id: "payout", num: "05", title: "Вывод средств" },
+  { id: "reconcile", num: "06", title: "Сверка" },
+  { id: "tests", num: "07", title: "Тесты" },
 ];
 
 function NavItem({ section, active, onClick }: { section: typeof sections[0]; active: boolean; onClick: () => void }) {
@@ -86,17 +85,17 @@ function EndpointCard({ method, path, desc, auth }: { method: string; path: stri
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Модуль аутентификации" />
+      <SectionHeader num="00" title="Financial Journal" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        JWT + Refresh Token Rotation + TOTP 2FA + Rate Limiting. Реализовано согласно Конституции KURUTA.
+        КРИТИЧЕСКИ ВАЖНЫЙ МОДУЛЬ. Ошибки здесь = потеря денег. Двойная запись, идемпотентность, атомарность.
       </p>
 
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Endpoints", value: "10" },
-          { label: "Guards", value: "3" },
-          { label: "Strategies", value: "2" },
-          { label: "E2E тестов", value: "12" },
+          { label: "Endpoints", value: "11" },
+          { label: "Типов транзакций", value: "8" },
+          { label: "E2E тестов", value: "10" },
+          { label: "Методов сервиса", value: "10" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
@@ -105,32 +104,39 @@ function OverviewSection() {
         ))}
       </div>
 
-      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Ключевые особенности</h4>
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Ключевые принципы</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• <strong>Argon2id</strong> для хеширования паролей (НЕ bcrypt)</li>
-          <li>• <strong>JWT Access Token</strong> — 15 минут</li>
-          <li>• <strong>Refresh Token</strong> — 7 дней, ротируется при каждом использовании</li>
-          <li>• <strong>httpOnly Secure SameSite=Strict cookie</strong> (НЕ localStorage)</li>
-          <li>• <strong>При утечке</strong> — отзыв всей семьи токенов</li>
-          <li>• <strong>TOTP 2FA</strong> — обязателен для финансовых операций</li>
-          <li>• <strong>Rate Limiting</strong> — 5 попыток/мин на auth</li>
-          <li>• <strong>Audit Log</strong> — все события логируются</li>
+          <li>• <strong>Двойная запись</strong>: Каждая операция имеет тип (deposit, reserve, release, reward, fee, payout, refund, adjustment)</li>
+          <li>• <strong>Баланс вычисляется</strong>: НЕ хранится в БД, вычисляется через SUM транзакций</li>
+          <li>• <strong>Атомарность</strong>: Все операции в <code className="font-mono bg-white px-1.5 py-0.5 rounded">prisma.$transaction</code></li>
+          <li>• <strong>Блокировки</strong>: <code className="font-mono bg-white px-1.5 py-0.5 rounded">SELECT ... FOR UPDATE</code> при работе с балансом</li>
+          <li>• <strong>Идемпотентность</strong>: Каждая операция имеет уникальный <code className="font-mono bg-white px-1.5 py-0.5 rounded">idempotencyKey</code></li>
+          <li>• <strong>Аудит</strong>: Все операции логируются в <code className="font-mono bg-white px-1.5 py-0.5 rounded">audit_log</code></li>
         </ul>
       </Card>
 
-      <div className="space-y-3">
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Формула баланса</h4>
+        <pre className="text-sm font-mono bg-white p-4 rounded-lg overflow-x-auto">
+{`Баланс = SUM(deposit, reward, refund, release) - SUM(reserve, payout, fee)
+
+Приход:  deposit, reward, refund, release
+Расход:  reserve, payout, fee`}
+        </pre>
+      </Card>
+
+      <div className="space-y-3 mt-8">
         {[
-          { task: "Регистрация с Argon2id", status: "done" as const },
-          { task: "Вход с валидацией", status: "done" as const },
-          { task: "JWT Access + Refresh токены", status: "done" as const },
-          { task: "Refresh token rotation", status: "done" as const },
-          { task: "При утечке — отзыв всех сессий", status: "done" as const },
-          { task: "TOTP 2FA (enable/verify/disable)", status: "done" as const },
-          { task: "CRUD профиля + загрузка аватара", status: "done" as const },
-          { task: "Guards: JwtAuth, Roles, RateLimit", status: "done" as const },
-          { task: "E2E тесты (register → login → refresh → me → logout)", status: "done" as const },
-          { task: "Тест ротации refresh токенов", status: "done" as const },
+          { task: "FinanceService с 10 методами", status: "done" as const },
+          { task: "Все методы в prisma.$transaction", status: "done" as const },
+          { task: "SELECT ... FOR UPDATE для блокировок", status: "done" as const },
+          { task: "Идемпотентность через idempotencyKey", status: "done" as const },
+          { task: "Двойная запись через type enum", status: "done" as const },
+          { task: "API эндпоинты: /balance, /transactions, /payout", status: "done" as const },
+          { task: "PaymentProvider интерфейс + MockPaymentProvider", status: "done" as const },
+          { task: "Тест идемпотентности", status: "done" as const },
+          { task: "Тест race condition", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -149,57 +155,85 @@ function OverviewSection() {
   );
 }
 
-function RegistrationSection() {
+function BalanceSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Регистрация" />
+      <SectionHeader num="01" title="Вычисление баланса" />
       
-      <EndpointCard method="POST" path="/api/v1/auth/register" desc="Регистрация нового пользователя" />
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">⚠️ КРИТИЧНО</h4>
+        <p className="text-sm text-[#444]">
+          Баланс <strong>НЕ хранится</strong> как поле в таблице User. Он вычисляется через агрегацию FinancialTransaction.
+        </p>
+      </Card>
+
+      <EndpointCard method="GET" path="/finance/balance" desc="Получить баланс пользователя" auth />
 
       <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request Body</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (200)</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
 {`{
-  "email": "user@example.com",
-  "password": "StrongPass123",
-  "displayName": "John Doe"
+  "balance": "1500.00",
+  "currency": "RUB"
 }`}
         </pre>
       </Card>
 
       <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (201)</h4>
-        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`{
-  "id": "uuid",
-  "email": "user@example.com",
-  "displayName": "John Doe"
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Реализация getBalance()</h4>
+        <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`async getBalance(userId: string): Promise<Decimal> {
+  const transactions = await prisma.financialTransaction.findMany({
+    where: {
+      userId,
+      status: FinancialTransactionStatus.completed,
+    },
+  });
+
+  let balance = new Decimal(0);
+
+  for (const tx of transactions) {
+    const amount = new Decimal(tx.amount.toString());
+
+    switch (tx.type) {
+      case 'deposit':
+      case 'reward':
+      case 'refund':
+      case 'release':
+        balance = balance.plus(amount);
+        break;
+      case 'reserve':
+      case 'payout':
+      case 'fee':
+        balance = balance.minus(amount);
+        break;
+    }
+  }
+
+  return balance;
 }`}
         </pre>
       </Card>
 
-      <Card className="mt-4 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">Валидация пароля</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Минимум 8 символов</li>
-          <li>• Максимум 128 символов</li>
-          <li>• Должен содержать: uppercase, lowercase, digit</li>
-          <li>• Хешируется через <code className="font-mono bg-white px-1.5 py-0.5 rounded">Argon2id</code></li>
-        </ul>
-      </Card>
-
       <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Argon2id параметры</h4>
-        <div className="grid grid-cols-3 gap-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы транзакций</h4>
+        <div className="grid grid-cols-2 gap-3">
           {[
-            { param: "memoryCost", value: "65536", desc: "64 MB" },
-            { param: "timeCost", value: "3", desc: "iterations" },
-            { param: "parallelism", value: "4", desc: "threads" },
-          ].map((item) => (
-            <div key={item.param} className="border border-[#E5E5E5] rounded-lg p-3">
-              <code className="text-xs font-mono text-[#1A1A1A]">{item.param}</code>
-              <p className="text-2xl font-bold text-[#FF6B35] font-display mt-1">{item.value}</p>
-              <p className="text-xs text-[#999]">{item.desc}</p>
+            { type: "deposit", desc: "Пополнение", sign: "+", color: "#2D9B6E" },
+            { type: "reward", desc: "Вознаграждение", sign: "+", color: "#2D9B6E" },
+            { type: "refund", desc: "Возврат", sign: "+", color: "#2D9B6E" },
+            { type: "release", desc: "Освобождение резерва", sign: "+", color: "#2D9B6E" },
+            { type: "reserve", desc: "Резервирование", sign: "−", color: "#E63946" },
+            { type: "payout", desc: "Выплата", sign: "−", color: "#E63946" },
+            { type: "fee", desc: "Комиссия", sign: "−", color: "#E63946" },
+            { type: "adjustment", desc: "Корректировка", sign: "±", color: "#F59E0B" },
+          ].map((t) => (
+            <div key={t.type} className="border border-[#E5E5E5] rounded-lg p-3">
+              <code className="text-xs font-mono text-[#1A1A1A]">{t.type}</code>
+              <p className="text-xs text-[#666] mt-1">{t.desc}</p>
+              <p className={`text-lg font-bold mt-1`} style={{ color: t.color }}>
+                {t.sign}
+              </p>
             </div>
           ))}
         </div>
@@ -208,114 +242,95 @@ function RegistrationSection() {
   );
 }
 
-function LoginSection() {
+function OperationsSection() {
   return (
     <div>
-      <SectionHeader num="02" title="Вход" />
+      <SectionHeader num="02" title="Финансовые операции" />
       
-      <EndpointCard method="POST" path="/api/v1/auth/login" desc="Вход пользователя" />
+      <div className="space-y-4">
+        <EndpointCard method="POST" path="/finance/deposit" desc="Пополнение баланса" auth />
+        <EndpointCard method="POST" path="/finance/reserve" desc="Резервирование средств" auth />
+        <EndpointCard method="POST" path="/finance/release" desc="Освобождение резерва" auth />
+        <EndpointCard method="POST" path="/finance/reward" desc="Начисление вознаграждения" auth />
+        <EndpointCard method="POST" path="/finance/pay-to-owner" desc="Выплата владельцу" auth />
+        <EndpointCard method="POST" path="/finance/refund" desc="Возврат средств" auth />
+      </div>
 
       <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request Body</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Пример: Пополнение баланса</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`{
-  "email": "user@example.com",
-  "password": "StrongPass123"
+{`POST /finance/deposit
+{
+  "amount": "1000.00",
+  "description": "Пополнение баланса",
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440000"
 }`}
         </pre>
       </Card>
 
       <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (200)</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Пример: Резервирование средств</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`{
-  "accessToken": "eyJhbGc...",
-  "user": {
-    "id": "uuid",
-    "email": "user@example.com",
-    "displayName": "John Doe",
-    "roles": ["creator"]
-  }
+{`POST /finance/reserve
+{
+  "amount": "500.00",
+  "description": "Резервирование для задания",
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440001",
+  "relatedEntityId": "task-uuid"
 }`}
         </pre>
       </Card>
 
       <Card className="mt-4 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">🔒 Security Headers</h4>
-        <pre className="text-sm font-mono text-[#444]">
-{`Set-Cookie: refreshToken=eyJhbGc...; 
-  HttpOnly; 
-  Secure; 
-  SameSite=Strict; 
-  Max-Age=604800`}
-        </pre>
-      </Card>
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Атомарность операций</h4>
+        <p className="text-sm text-[#444] mb-3">Все операции используют <code className="font-mono bg-white px-1.5 py-0.5 rounded">prisma.$transaction</code>:</p>
+        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
+{`return prisma.$transaction(async (tx) => {
+  // Блокируем пользователя
+  await tx.user.findUniqueOrThrow({
+    where: { id: userId },
+  });
 
-      <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Rate Limiting</h4>
-        <div className="flex items-center gap-4">
-          <div className="text-4xl font-bold text-[#FF6B35] font-display">5</div>
-          <div>
-            <p className="text-sm text-[#1A1A1A] font-semibold">попыток в минуту</p>
-            <p className="text-xs text-[#666]">На endpoints: login, register</p>
-          </div>
-        </div>
+  // Проверяем идемпотентность
+  const existing = await tx.financialTransaction.findUnique({
+    where: { idempotencyKey },
+  });
+
+  if (existing) {
+    return existing; // Идемпотентность
+  }
+
+  // Создаём транзакцию
+  const transaction = await tx.financialTransaction.create({
+    data: { ... },
+  });
+
+  // Аудит-лог
+  await tx.auditLog.create({ ... });
+
+  return transaction;
+});`}
+        </pre>
       </Card>
     </div>
   );
 }
 
-function JwtSection() {
+function IdempotencySection() {
   return (
     <div>
-      <SectionHeader num="03" title="JWT & Refresh Token Rotation" />
-      
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Access Token</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Алгоритм</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">HS256</code>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Срок жизни</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">15 мин</code>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Хранение</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">localStorage</code>
-            </div>
-          </div>
-        </Card>
-
-        <Card>
-          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Refresh Token</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Алгоритм</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">HS256</code>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Срок жизни</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">7 дней</code>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-[#666]">Хранение</span>
-              <code className="text-sm font-mono text-[#1A1A1A]">httpOnly cookie</code>
-            </div>
-          </div>
-        </Card>
-      </div>
+      <SectionHeader num="03" title="Идемпотентность" />
+      <p className="text-[#444] mb-8">Каждая операция имеет уникальный <code className="font-mono bg-[#F5F5F0] px-2 py-0.5 rounded">idempotencyKey</code> (UUID). Повторный вызов = тот же результат.</p>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-4">Refresh Token Rotation</h4>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Как работает идемпотентность</h4>
         <div className="space-y-4">
           {[
-            { step: "1", desc: "Пользователь получает refresh token при логине" },
-            { step: "2", desc: "При использовании refresh token — старый помечается как revoked" },
-            { step: "3", desc: "Генерируется новый refresh token" },
-            { step: "4", desc: "Создается новая сессия в БД" },
+            { step: "1", desc: "Клиент генерирует уникальный UUID (idempotencyKey)" },
+            { step: "2", desc: "Отправляет запрос с этим ключом" },
+            { step: "3", desc: "Сервер проверяет: существует ли транзакция с этим ключом?" },
+            { step: "4", desc: "Если существует — возвращает её (НЕ создаёт дубликат)" },
+            { step: "5", desc: "Если не существует — создаёт новую транзакцию" },
           ].map((item) => (
             <div key={item.step} className="flex items-start gap-4">
               <div className="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center flex-shrink-0">
@@ -327,216 +342,206 @@ function JwtSection() {
         </div>
       </Card>
 
-      <Card className="border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚨 При утечке refresh token</h4>
-        <p className="text-sm text-[#444] mb-4">
-          Если обнаружено повторное использование старого refresh token:
-        </p>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• <strong>Все сессии пользователя отзываются</strong></li>
-          <li>• Записывается audit log: <code className="font-mono bg-white px-1.5 py-0.5 rounded">security.refresh_token_reuse</code></li>
-          <li>• Возвращается ошибка 401</li>
-          <li>• Пользователь должен войти заново</li>
-        </ul>
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Тест идемпотентности</h4>
+        <pre className="text-xs font-mono bg-white p-4 rounded-lg overflow-x-auto">
+{`it('should return same transaction on duplicate idempotency key', async () => {
+  const idempotencyKey = '550e8400-e29b-41d4-a716-446655440001';
+
+  // Первый запрос
+  const tx1 = await financeService.deposit({
+    userId,
+    amount: '1000.00',
+    idempotencyKey,
+  });
+
+  // Второй запрос с тем же ключом
+  const tx2 = await financeService.deposit({
+    userId,
+    amount: '1000.00',
+    idempotencyKey,
+  });
+
+  // Должна вернуться та же транзакция
+  expect(tx1.id).toBe(tx2.id);
+
+  // В БД только одна транзакция
+  const count = await prisma.financialTransaction.count({
+    where: { idempotencyKey },
+  });
+  expect(count).toBe(1);
+});`}
+        </pre>
       </Card>
     </div>
   );
 }
 
-function TwoFaSection() {
+function RaceConditionSection() {
   return (
     <div>
-      <SectionHeader num="04" title="2FA (TOTP)" />
-      <p className="text-[#444] mb-8">Time-based One-Time Password. Обязателен для финансовых операций.</p>
+      <SectionHeader num="04" title="Race Conditions" />
+      <p className="text-[#444] mb-8">Предотвращение double-spending через блокировки и атомарные транзакции.</p>
 
-      <div className="space-y-4 mb-8">
-        <EndpointCard method="POST" path="/api/v1/auth/totp/enable" desc="Инициализация настройки TOTP" auth />
-        <EndpointCard method="POST" path="/api/v1/auth/totp/verify" desc="Подтверждение TOTP" auth />
-        <EndpointCard method="POST" path="/api/v1/auth/totp/disable" desc="Отключение TOTP" auth />
-      </div>
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Проблема</h4>
+        <p className="text-sm text-[#444]">
+          Два одновременных запроса на списание 800 RUB при балансе 1000 RUB. Без защиты оба пройдут, и баланс уйдёт в минус.
+        </p>
+      </Card>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Enable TOTP — Response</h4>
-        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`{
-  "secret": "JBSWY3DPEHPK3PXP",
-  "qrCodeUrl": "otpauth://totp/KURUTA:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=KURUTA"
-}`}
-        </pre>
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Решение</h4>
+        <div className="space-y-4">
+          {[
+            { step: "1", desc: "prisma.$transaction — атомарность" },
+            { step: "2", desc: "SELECT ... FOR UPDATE — блокировка пользователя" },
+            { step: "3", desc: "Проверка баланса ДО операции" },
+            { step: "4", desc: "Если недостаточно средств — ошибка" },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#2D9B6E]/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#2D9B6E] font-bold">{item.step}</span>
+              </div>
+              <p className="text-sm text-[#444] pt-1">{item.desc}</p>
+            </div>
+          ))}
+        </div>
       </Card>
 
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Когда требуется 2FA</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Вывод средств</li>
-          <li>• Смена реквизитов вывода</li>
-          <li>• Критические изменения аккаунта</li>
-        </ul>
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Тест race condition</h4>
+        <pre className="text-xs font-mono bg-white p-4 rounded-lg overflow-x-auto">
+{`it('should handle concurrent reserve operations correctly', async () => {
+  // Пополняем баланс 1000
+  await financeService.deposit({
+    userId,
+    amount: '1000.00',
+    idempotencyKey: 'uuid-1',
+  });
+
+  // Пытаемся зарезервировать 800 дважды одновременно
+  const results = await Promise.allSettled([
+    financeService.reserve({
+      userId,
+      amount: '800.00',
+      idempotencyKey: 'uuid-2',
+      relatedEntityId: 'task-1',
+    }),
+    financeService.reserve({
+      userId,
+      amount: '800.00',
+      idempotencyKey: 'uuid-3',
+      relatedEntityId: 'task-2',
+    }),
+  ]);
+
+  // Одна успешная, одна с ошибкой
+  const successful = results.filter(r => r.status === 'fulfilled');
+  const failed = results.filter(r => r.status === 'rejected');
+
+  expect(successful.length).toBe(1);
+  expect(failed.length).toBe(1);
+
+  // Баланс корректен: 1000 - 800 = 200
+  const balance = await financeService.getBalance(userId);
+  expect(balance.toString()).toBe('200.00');
+});`}
+        </pre>
       </Card>
     </div>
   );
 }
 
-function UsersSection() {
+function PayoutSection() {
   return (
     <div>
-      <SectionHeader num="05" title="Профиль пользователя" />
+      <SectionHeader num="05" title="Вывод средств" />
       
-      <div className="space-y-4 mb-8">
-        <EndpointCard method="GET" path="/api/v1/users/me" desc="Получение профиля" auth />
-        <EndpointCard method="PUT" path="/api/v1/users/me" desc="Обновление профиля" auth />
-        <EndpointCard method="POST" path="/api/v1/users/me/avatar" desc="Загрузка аватара" auth />
-      </div>
+      <EndpointCard method="POST" path="/finance/payout" desc="Запрос на вывод средств" auth />
+      <EndpointCard method="POST" path="/finance/payout/:id/complete" desc="Завершение вывода (для финансистов)" auth />
 
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Update Profile — Request</h4>
+      <Card className="mt-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Request: Запрос на вывод</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`{
-  "displayName": "John Doe",
-  "bio": "Software developer",
-  "country": "Russia",
-  "city": "Moscow",
-  "timezone": "Europe/Moscow"
+{`POST /finance/payout
+{
+  "amount": "1000.00",
+  "paymentMethod": "card",
+  "requisites": {
+    "cardNumber": "****1234"
+  },
+  "idempotencyKey": "550e8400-e29b-41d4-a716-446655440005"
 }`}
         </pre>
       </Card>
 
-      <Card className="border-[#FF6B35]/30 bg-[#FF6B35]/5">
-        <h4 className="font-semibold text-[#FF6B35] mb-3">📸 Загрузка аватара</h4>
+      <Card className="mt-4 border-[#F59E0B]/30 bg-[#F59E0B]/5">
+        <h4 className="font-semibold text-[#F59E0B] mb-3">⚠️ Ограничения</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Валидация MIME по содержимому (magic numbers)</li>
-          <li>• Ограничение размера: 10 MB</li>
-          <li>• Разрешенные типы: JPEG, PNG, WebP</li>
-          <li>• Хранение в S3 (MinIO)</li>
-          <li>• Audit log при загрузке</li>
+          <li>• Минимальная сумма вывода: <strong>500 RUB</strong></li>
+          <li>• Требуется достаточный баланс</li>
+          <li>• Заявка проходит модерацию</li>
+          <li>• После завершения — выплата через платёжный провайдер</li>
         </ul>
+      </Card>
+
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">PaymentProvider интерфейс</h4>
+        <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`interface PaymentProvider {
+  createPayment(params): Promise<{ paymentId, status }>;
+  getPaymentStatus(paymentId): Promise<{ status }>;
+  refundPayment(paymentId, amount?): Promise<{ refundId, status }>;
+  payout(params): Promise<{ payoutId, status }>;
+}
+
+// Реализации:
+// - MockPaymentProvider (заглушка для dev)
+// - YooKassaProvider (TODO)
+// - StripeProvider (TODO)`}
+        </pre>
       </Card>
     </div>
   );
 }
 
-function GuardsSection() {
+function ReconcileSection() {
   return (
     <div>
-      <SectionHeader num="06" title="Guards" />
-      
-      <div className="space-y-4">
-        <Card>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#6366F1]/10 flex items-center justify-center">
-              <span className="text-[#6366F1] font-bold">🔐</span>
-            </div>
-            <h3 className="font-display font-semibold text-[#1A1A1A]">JwtAuthGuard</h3>
-          </div>
-          <p className="text-sm text-[#666] mb-3">Проверяет валидность JWT access token</p>
-          <pre className="text-xs font-mono bg-[#F5F5F0] p-3 rounded-lg">
-{`@UseGuards(JwtAuthGuard)
-@Get('protected')
-getProtected() {
-  return 'Protected resource';
+      <SectionHeader num="06" title="Сверка баланса" />
+      <p className="text-[#444] mb-8">Проверка корректности всех транзакций. Запускается по cron или вручную.</p>
+
+      <EndpointCard method="POST" path="/finance/reconcile" desc="Сверка баланса (для администраторов)" auth />
+
+      <Card className="mt-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Response (200)</h4>
+        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`{
+  "transactionCount": 150,
+  "finalBalance": "1500.00",
+  "errors": [],
+  "success": true
 }`}
-          </pre>
-        </Card>
+        </pre>
+      </Card>
 
-        <Card>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#2D9B6E]/10 flex items-center justify-center">
-              <span className="text-[#2D9B6E] font-bold">👥</span>
-            </div>
-            <h3 className="font-display font-semibold text-[#1A1A1A]">RolesGuard</h3>
-          </div>
-          <p className="text-sm text-[#666] mb-3">Проверяет наличие необходимых ролей</p>
-          <pre className="text-xs font-mono bg-[#F5F5F0] p-3 rounded-lg">
-{`@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin', 'moderator')
-@Get('admin')
-getAdmin() {
-  return 'Admin resource';
-}`}
-          </pre>
-        </Card>
+      <Card className="mt-4">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Что проверяется</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Все транзакции пользователя</li>
+          <li>• Корректность расчёта баланса</li>
+          <li>• Отсутствие отрицательного баланса</li>
+          <li>• Соответствие рассчитанного и текущего баланса</li>
+        </ul>
+      </Card>
 
-        <Card>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-lg bg-[#E63946]/10 flex items-center justify-center">
-              <span className="text-[#E63946] font-bold">⚡</span>
-            </div>
-            <h3 className="font-display font-semibold text-[#1A1A1A]">RateLimitGuard</h3>
-          </div>
-          <p className="text-sm text-[#666] mb-3">Ограничивает частоту запросов</p>
-          <div className="grid grid-cols-2 gap-3 mt-3">
-            <div className="border border-[#E5E5E5] rounded-lg p-3">
-              <p className="text-xs text-[#666]">Auth endpoints</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">5/мин</p>
-            </div>
-            <div className="border border-[#E5E5E5] rounded-lg p-3">
-              <p className="text-xs text-[#666]">API endpoints</p>
-              <p className="text-lg font-bold text-[#1A1A1A]">100/мин</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-}
-
-function SecuritySection() {
-  return (
-    <div>
-      <SectionHeader num="07" title="Безопасность" />
-      
-      <div className="space-y-4">
-        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Хеширование паролей</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Алгоритм: <code className="font-mono bg-white px-1.5 py-0.5 rounded">Argon2id</code></li>
-            <li>• Уникальная соль на каждую запись</li>
-            <li>• Memory: 64 MB, Time: 3, Parallelism: 4</li>
-          </ul>
-        </Card>
-
-        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ JWT Security</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Access: короткоживущий (15 мин)</li>
-            <li>• Refresh: ротируется при каждом использовании</li>
-            <li>• Refresh хранится в httpOnly Secure SameSite=Strict cookie</li>
-            <li>• При утечке — отзыв всей семьи токенов</li>
-          </ul>
-        </Card>
-
-        <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Audit Log</h4>
-          <p className="text-sm text-[#444] mb-3">Все события аутентификации логируются:</p>
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              "user.register",
-              "user.login",
-              "user.logout",
-              "user.refresh",
-              "user.totp_initiated",
-              "user.totp_enabled",
-              "user.totp_disabled",
-              "user.profile_updated",
-              "user.avatar_updated",
-              "security.refresh_token_reuse",
-            ].map((event) => (
-              <code key={event} className="px-2 py-1 bg-white border border-[#E5E5E5] rounded text-xs font-mono text-[#1A1A1A]">
-                {event}
-              </code>
-            ))}
-          </div>
-        </Card>
-
-        <Card className="border-[#E63946]/30 bg-[#E63946]/5">
-          <h4 className="font-semibold text-[#E63946] mb-3">🚫 ЗАПРЕЩЕНО</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• ❌ Использовать bcrypt</li>
-            <li>• ❌ Хранить refresh token в localStorage</li>
-            <li>• ❌ Логировать пароли/токены</li>
-          </ul>
-        </Card>
-      </div>
+      <Card className="mt-4 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Аудит-лог сверки</h4>
+        <p className="text-sm text-[#444]">
+          Каждая сверка логируется в <code className="font-mono bg-white px-1.5 py-0.5 rounded">audit_log</code> с действием <code className="font-mono bg-white px-1.5 py-0.5 rounded">finance.reconciled</code>.
+        </p>
+      </Card>
     </div>
   );
 }
@@ -544,23 +549,22 @@ function SecuritySection() {
 function TestsSection() {
   return (
     <div>
-      <SectionHeader num="08" title="Тестирование" />
+      <SectionHeader num="07" title="Тестирование" />
       
       <Card className="mb-8">
         <h4 className="font-semibold text-[#1A1A1A] mb-3">E2E тесты</h4>
         <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
 {`cd apps/api
-npm run test:e2e`}
+npm run test:e2e test/finance.e2e-spec.ts`}
         </pre>
       </Card>
 
       <div className="space-y-3 mb-8">
         {[
-          { test: "Регистрация (успех, дубликат, слабый пароль)", count: 3 },
-          { test: "Вход (успех, неверный пароль, несуществующий)", count: 3 },
-          { test: "Получение текущего пользователя", count: 2 },
-          { test: "Refresh token (успех, ротация, повторное использование)", count: 3 },
-          { test: "Logout", count: 1 },
+          { test: "Идемпотентность (повторный вызов = тот же результат)", count: 2 },
+          { test: "Race conditions (два одновременных списания)", count: 2 },
+          { test: "Вычисление баланса", count: 1 },
+          { test: "Сверка баланса", count: 1 },
         ].map((item, i) => (
           <div key={i} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <span className="text-sm text-[#1A1A1A]">{item.test}</span>
@@ -572,10 +576,18 @@ npm run test:e2e`}
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
         <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• E2E тесты: register → login → refresh → me → logout</li>
-          <li>• Тест ротации refresh токенов</li>
-          <li>• Тест отзыва всех сессий при утечке</li>
-          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): auth module with 2FA and rate limiting</code></li>
+          <li>• Тест идемпотентности (повторный вызов = тот же результат)</li>
+          <li>• Тест race condition (два одновременных списания — только одно проходит)</li>
+          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): financial journal with double-entry and idempotency</code></li>
+        </ul>
+      </Card>
+
+      <Card className="mt-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚫 ЗАПРЕЩЕНО</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• ❌ Обновлять баланс напрямую</li>
+          <li>• ❌ Использовать Float для денег</li>
+          <li>• ❌ Делать транзакции без <code className="font-mono bg-white px-1.5 py-0.5 rounded">$transaction</code></li>
         </ul>
       </Card>
     </div>
@@ -584,13 +596,12 @@ npm run test:e2e`}
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
-  registration: RegistrationSection,
-  login: LoginSection,
-  jwt: JwtSection,
-  "2fa": TwoFaSection,
-  users: UsersSection,
-  guards: GuardsSection,
-  security: SecuritySection,
+  balance: BalanceSection,
+  operations: OperationsSection,
+  idempotency: IdempotencySection,
+  race: RaceConditionSection,
+  payout: PayoutSection,
+  reconcile: ReconcileSection,
   tests: TestsSection,
 };
 
@@ -611,7 +622,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Auth Module</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Financial Journal</p>
             </div>
           </div>
 
@@ -629,8 +640,8 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">JWT + TOTP + Rate Limit</span>
-            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">SECURE</span>
+            <span className="text-xs text-[#999] font-mono">Double-Entry + Idempotency</span>
+            <span className="px-2 py-1 bg-[#E63946]/10 text-[#E63946] text-xs font-medium rounded-md">CRITICAL</span>
           </div>
         </div>
       </header>
