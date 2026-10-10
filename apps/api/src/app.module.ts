@@ -13,6 +13,7 @@ import { AuthModule } from "./auth/auth.module";
 import { UsersModule } from "./users/users.module";
 import { FinanceModule } from "./finance/finance.module";
 import { CampaignsModule } from "./campaigns/campaigns.module";
+import { AdSlotsModule } from "./ad-slots/ad-slots.module";
 
 // ─── Environment validation schema ──────────────────────────────
 const envSchema = z.object({
@@ -54,6 +55,7 @@ const envSchema = z.object({
     UsersModule,
     FinanceModule,
     CampaignsModule,
+    AdSlotsModule,
   ],
   controllers: [AppController],
   providers: [
