@@ -2,12 +2,13 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "structure", num: "01", title: "Структура" },
-  { id: "infrastructure", num: "02", title: "Инфраструктура" },
-  { id: "database", num: "03", title: "База данных" },
-  { id: "security", num: "04", title: "Безопасность" },
-  { id: "ci-cd", num: "05", title: "CI/CD" },
-  { id: "constitution", num: "06", title: "Конституция" },
+  { id: "users", num: "01", title: "Пользователи" },
+  { id: "direction-a", num: "02", title: "Направление A" },
+  { id: "direction-b", num: "03", title: "Направление B" },
+  { id: "finance", num: "04", title: "Финансы" },
+  { id: "moderation", num: "05", title: "Модерация" },
+  { id: "system", num: "06", title: "Системные" },
+  { id: "indexes", num: "07", title: "Индексы" },
 ];
 
 function NavItem({ section, active, onClick }: { section: typeof sections[0]; active: boolean; onClick: () => void }) {
@@ -43,11 +44,11 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   );
 }
 
-function StatusBadge({ status }: { status: "done" | "ready" | "pending" }) {
+function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
   const config = {
     done: { bg: "bg-[#2D9B6E]/10", text: "text-[#2D9B6E]", label: "Готово" },
-    ready: { bg: "bg-[#FF6B35]/10", text: "text-[#FF6B35]", label: "Готово к запуску" },
-    pending: { bg: "bg-[#999]/10", text: "text-[#999]", label: "Ожидает" },
+    ready: { bg: "bg-[#FF6B35]/10", text: "text-[#FF6B35]", label: "Готово" },
+    critical: { bg: "bg-[#E63946]/10", text: "text-[#E63946]", label: "Критично" },
   };
   const c = config[status];
   return (
@@ -57,37 +58,103 @@ function StatusBadge({ status }: { status: "done" | "ready" | "pending" }) {
   );
 }
 
+function ModelCard({ name, fields, relations, indexes, color }: { 
+  name: string; 
+  fields: string[]; 
+  relations?: string[];
+  indexes?: string[];
+  color: string;
+}) {
+  return (
+    <Card className="mb-4">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+          <span className="text-lg font-bold" style={{ color }}>{name[0]}</span>
+        </div>
+        <div>
+          <h3 className="font-display font-semibold text-[#1A1A1A]">{name}</h3>
+          <p className="text-xs text-[#999]">{fields.length} полей</p>
+        </div>
+      </div>
+      
+      <div className="space-y-2 mb-4">
+        {fields.map((field) => (
+          <div key={field} className="flex items-center gap-2 text-sm">
+            <code className="font-mono text-xs text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded">{field}</code>
+          </div>
+        ))}
+      </div>
+
+      {relations && relations.length > 0 && (
+        <div className="pt-4 border-t border-[#E5E5E5]">
+          <p className="text-xs text-[#999] mb-2">Связи:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {relations.map((rel) => (
+              <span key={rel} className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] text-xs rounded font-mono">
+                {rel}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {indexes && indexes.length > 0 && (
+        <div className="pt-4 border-t border-[#E5E5E5]">
+          <p className="text-xs text-[#999] mb-2">Индексы:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {indexes.map((idx) => (
+              <span key={idx} className="px-2 py-1 bg-[#F59E0B]/10 text-[#F59E0B] text-xs rounded font-mono">
+                {idx}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Инициализация монорепо" />
+      <SectionHeader num="00" title="Схема базы данных" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        Монорепо KURUTA инициализировано. Все инфраструктурные компоненты созданы и готовы к запуску.
+        PostgreSQL 16. Prisma ORM. 18 моделей. Баланс вычисляется через FinancialTransaction.
       </p>
 
-      <div className="grid md:grid-cols-3 gap-4 mb-8">
+      <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Приложения", value: "3", sub: "api, web, admin" },
-          { label: "Пакеты", value: "2", sub: "shared, database" },
-          { label: "Сервисы Docker", value: "3", sub: "PostgreSQL, Redis, MinIO" },
+          { label: "Моделей", value: "18" },
+          { label: "Enum типов", value: "14" },
+          { label: "Связей", value: "25+" },
+          { label: "Индексов", value: "50+" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
             <p className="text-3xl font-bold text-[#1A1A1A] font-display">{item.value}</p>
-            <p className="text-xs text-[#999] mt-1">{item.sub}</p>
           </Card>
         ))}
       </div>
 
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-2">⚠️ Критично: Финансовая модель</h4>
+        <ul className="text-sm text-[#444] space-y-1">
+          <li>• Баланс пользователя <strong>НЕ хранится</strong> как поле в User</li>
+          <li>• Баланс вычисляется через агрегацию FinancialTransaction</li>
+          <li>• Все операции в ACID-транзакциях</li>
+          <li>• Идемпотентность через idempotencyKey (unique)</li>
+          <li>• Double-entry: каждая транзакция имеет тип (debit/credit)</li>
+        </ul>
+      </Card>
+
       <div className="space-y-3">
         {[
-          { task: "Структура Turborepo", status: "done" as const },
-          { task: "Docker Compose (PostgreSQL 16, Redis 7, MinIO)", status: "done" as const },
-          { task: "GitHub Actions CI pipeline", status: "done" as const },
-          { task: "Pre-commit hooks (husky + lint-staged + gitleaks)", status: "done" as const },
-          { task: "Prisma schema (все сущности)", status: "done" as const },
-          { task: ".env.example (все переменные)", status: "done" as const },
-          { task: "README.md с инструкциями", status: "done" as const },
+          { task: "Все обязательные сущности", status: "done" as const },
+          { task: "Decimal(14,2) для денег", status: "done" as const },
+          { task: "Индексы на FK и составные", status: "done" as const },
+          { task: "Cascade delete только где безопасно", status: "done" as const },
+          { task: "AuditLog append-only (нет updatedAt)", status: "done" as const },
+          { task: "FSM статусы из Конституции", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -106,276 +173,65 @@ function OverviewSection() {
   );
 }
 
-function StructureSection() {
-  const tree = [
-    { path: "apps/", type: "dir" },
-    { path: "  api/", type: "dir", desc: "NestJS Backend" },
-    { path: "    src/main.ts", type: "file" },
-    { path: "    src/app.module.ts", type: "file" },
-    { path: "    nest-cli.json", type: "config" },
-    { path: "  web/", type: "dir", desc: "Next.js 14+ (App Router)" },
-    { path: "    src/app/layout.tsx", type: "file" },
-    { path: "    src/app/page.tsx", type: "file" },
-    { path: "    next.config.ts", type: "config" },
-    { path: "  admin/", type: "dir", desc: "Next.js Admin Panel" },
-    { path: "    src/app/layout.tsx", type: "file" },
-    { path: "    src/app/page.tsx", type: "file" },
-    { path: "packages/", type: "dir" },
-    { path: "  shared/", type: "dir", desc: "Общие типы, утилиты, схемы" },
-    { path: "    src/constants.ts", type: "file" },
-    { path: "    src/types.ts", type: "file" },
-    { path: "    src/schemas.ts", type: "file" },
-    { path: "  database/", type: "dir", desc: "Prisma ORM" },
-    { path: "    prisma/schema.prisma", type: "file" },
-    { path: "    src/index.ts", type: "file" },
-    { path: "docker-compose.yml", type: "config" },
-    { path: "turbo.json", type: "config" },
-    { path: ".github/workflows/ci.yml", type: "config" },
-    { path: ".husky/pre-commit", type: "config" },
-    { path: ".gitleaks.toml", type: "config" },
-    { path: ".env.example", type: "config" },
-    { path: "KURUTA_CONTEXT.md", type: "config" },
-  ];
-
+function UsersSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Структура монорепо" />
-      <Card className="bg-[#1A1A1A] border-[#1A1A1A] mb-8">
-        <pre className="text-sm font-mono overflow-x-auto">
-          {tree.map((item, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <span className={
-                item.type === "dir" ? "text-[#FF6B35]" :
-                item.type === "config" ? "text-[#6366F1]" :
-                "text-[#F5F5F0]"
-              }>
-                {item.path}
-              </span>
-              {item.desc && <span className="text-[#666] text-xs">← {item.desc}</span>}
-            </div>
-          ))}
-        </pre>
-      </Card>
+      <SectionHeader num="01" title="Пользователи и роли" />
+      <p className="text-[#444] mb-8">Единый аккаунт с возможностью совмещения ролей. Баланс привязан к userId.</p>
 
-      <div className="grid md:grid-cols-2 gap-4">
-        {[
-          { name: "@kuruta/api", desc: "NestJS 10, TypeScript 5.x", stack: ["NestJS", "Prisma", "Zod", "Argon2"] },
-          { name: "@kuruta/web", desc: "Next.js 14+ App Router", stack: ["Next.js", "React 18", "TypeScript"] },
-          { name: "@kuruta/admin", desc: "Next.js 14+ Admin Panel", stack: ["Next.js", "React 18", "TypeScript"] },
-          { name: "@kuruta/shared", desc: "Общие типы и утилиты", stack: ["Zod", "TypeScript"] },
-          { name: "@kuruta/database", desc: "Prisma schema + client", stack: ["Prisma", "PostgreSQL 16"] },
-        ].map((pkg) => (
-          <Card key={pkg.name}>
-            <div className="flex items-center gap-2 mb-2">
-              <code className="text-sm font-mono font-semibold text-[#1A1A1A]">{pkg.name}</code>
-            </div>
-            <p className="text-sm text-[#666] mb-3">{pkg.desc}</p>
-            <div className="flex flex-wrap gap-1.5">
-              {pkg.stack.map((s) => (
-                <span key={s} className="px-2 py-0.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded text-xs font-mono text-[#1A1A1A]">
-                  {s}
-                </span>
-              ))}
-            </div>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-}
+      <ModelCard
+        name="User"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "email: string (unique)",
+          "phone: string? (unique)",
+          "passwordHash: string",
+          "status: UserStatus",
+          "totpSecret: string? (encrypted)",
+          "totpEnabled: boolean",
+          "createdAt, updatedAt",
+        ]}
+        relations={["profile", "roles", "ambassadorProfile", "platformOwnerProfile", "campaigns", "tasks", "adSlots", "deals", "transactions", "payouts"]}
+        indexes={["email", "phone", "status", "createdAt"]}
+      />
 
-function InfrastructureSection() {
-  return (
-    <div>
-      <SectionHeader num="02" title="Инфраструктура" />
-      <p className="text-[#444] mb-8">Docker Compose для локальной разработки. Запуск: <code className="font-mono bg-[#F5F5F0] px-2 py-0.5 rounded text-sm">docker compose up -d</code></p>
+      <ModelCard
+        name="UserProfile"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (unique, FK)",
+          "displayName: string?",
+          "avatarUrl: string?",
+          "bio: string?",
+          "country, city, timezone: string?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["user (Cascade)"]}
+        indexes={["userId"]}
+      />
 
-      <div className="space-y-4">
-        {[
-          {
-            name: "PostgreSQL 16",
-            port: "5432",
-            desc: "Основная база данных. JSONB только где оправдано.",
-            health: "pg_isready",
-            color: "#6366F1",
-          },
-          {
-            name: "Redis 7",
-            port: "6379",
-            desc: "Кэш, сессии, очереди BullMQ.",
-            health: "redis-cli ping",
-            color: "#E63946",
-          },
-          {
-            name: "MinIO",
-            port: "9000 / 9001",
-            desc: "S3-совместимое хранилище файлов. Console на 9001.",
-            health: "HTTP /minio/health/live",
-            color: "#FF6B35",
-          },
-        ].map((svc) => (
-          <Card key={svc.name}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${svc.color}15` }}>
-                <span className="text-lg font-bold" style={{ color: svc.color }}>{svc.name[0]}</span>
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-display font-semibold text-[#1A1A1A]">{svc.name}</h3>
-                  <code className="text-xs font-mono text-[#999] bg-[#F5F5F0] px-2 py-0.5 rounded">:{svc.port}</code>
-                  <StatusBadge status="done" />
-                </div>
-                <p className="text-sm text-[#666] mb-2">{svc.desc}</p>
-                <p className="text-xs text-[#999]">Health: <code className="font-mono">{svc.health}</code></p>
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <ModelCard
+        name="UserRoleAssignment"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (FK)",
+          "role: UserRole (enum)",
+          "grantedAt: datetime",
+          "grantedBy: string? (admin userId)",
+        ]}
+        relations={["user (Cascade)"]}
+        indexes={["userId", "role", "unique(userId, role)"]}
+      />
 
       <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Команды Docker</h4>
-        <div className="space-y-2">
-          {[
-            { cmd: "docker compose up -d", desc: "Поднять все сервисы" },
-            { cmd: "docker compose down -v", desc: "Остановить и удалить volumes" },
-            { cmd: "docker compose ps", desc: "Статус сервисов" },
-            { cmd: "docker compose logs -f postgres", desc: "Логи PostgreSQL" },
-          ].map((item) => (
-            <div key={item.cmd} className="flex items-center gap-3">
-              <code className="font-mono text-sm text-[#FF6B35] bg-[#FF6B35]/5 px-3 py-1.5 rounded-lg min-w-[280px]">{item.cmd}</code>
-              <span className="text-sm text-[#666]">{item.desc}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function DatabaseSection() {
-  const models = [
-    { name: "User", fields: 12, desc: "Пользователи системы" },
-    { name: "UserRole", fields: 5, desc: "Многие-ко-многим роли" },
-    { name: "AmbassadorApplication", fields: 10, desc: "Заявки амбассадоров" },
-    { name: "Campaign", fields: 11, desc: "Кампании креаторов" },
-    { name: "Task", fields: 13, desc: "Задания для амбассадоров" },
-    { name: "AdSlot", fields: 11, desc: "Рекламные места" },
-    { name: "Deal", fields: 12, desc: "Сделки (бронирования)" },
-    { name: "FinancialTransaction", fields: 11, desc: "Финансовый журнал" },
-    { name: "Payout", fields: 10, desc: "Выплаты" },
-    { name: "Dispute", fields: 10, desc: "Споры" },
-    { name: "Session", fields: 7, desc: "Refresh tokens" },
-    { name: "Notification", fields: 7, desc: "Уведомления" },
-    { name: "AuditLog", fields: 9, desc: "Аудит-лог (append-only)" },
-  ];
-
-  return (
-    <div>
-      <SectionHeader num="03" title="База данных" />
-      <p className="text-[#444] mb-4">PostgreSQL 16. Prisma ORM. 13 моделей, все состояния через FSM.</p>
-      <p className="text-sm text-[#E63946] mb-8 border border-[#E63946]/30 rounded-xl p-4 bg-[#E63946]/5">
-        ⚠️ Баланс — вычисляемое поле из FinancialTransaction. Запрещено хранить как изменяемое число.
-      </p>
-
-      <div className="space-y-2">
-        {models.map((model) => (
-          <div key={model.name} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <code className="font-mono text-sm font-semibold text-[#1A1A1A]">{model.name}</code>
-              <span className="text-xs text-[#999]">{model.desc}</span>
-            </div>
-            <span className="text-xs font-mono text-[#666] bg-[#F5F5F0] px-2 py-0.5 rounded">{model.fields} fields</span>
-          </div>
-        ))}
-      </div>
-
-      <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Команды Prisma</h4>
-        <div className="space-y-2">
-          {[
-            { cmd: "npx prisma migrate dev", desc: "Создать и применить миграцию" },
-            { cmd: "npx prisma generate", desc: "Сгенерировать клиент" },
-            { cmd: "npx prisma studio", desc: "Открыть GUI для БД" },
-            { cmd: "npx prisma db push", desc: "Push schema без миграции (dev)" },
-          ].map((item) => (
-            <div key={item.cmd} className="flex items-center gap-3">
-              <code className="font-mono text-sm text-[#FF6B35] bg-[#FF6B35]/5 px-3 py-1.5 rounded-lg min-w-[260px]">{item.cmd}</code>
-              <span className="text-sm text-[#666]">{item.desc}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-    </div>
-  );
-}
-
-function SecuritySection() {
-  return (
-    <div>
-      <SectionHeader num="04" title="Безопасность" />
-      <p className="text-[#444] mb-8">Defense in depth. Zero trust. Pre-commit hooks блокируют утечки секретов.</p>
-
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        {[
-          {
-            title: "Pre-commit: lint-staged",
-            desc: "Линтит только изменённые файлы. ESLint + Prettier.",
-            file: ".lintstagedrc.json",
-          },
-          {
-            title: "Pre-commit: gitleaks",
-            desc: "Сканирует staged-файлы на наличие секретов. Блокирует коммит.",
-            file: ".gitleaks.toml",
-          },
-          {
-            title: "Husky hooks",
-            desc: "Автоматическая установка hooks при npm install.",
-            file: ".husky/pre-commit",
-          },
-          {
-            title: "Environment validation",
-            desc: "Zod-схема валидирует .env при старте API.",
-            file: "apps/api/src/app.module.ts",
-          },
-        ].map((item) => (
-          <Card key={item.title}>
-            <h4 className="font-display font-semibold text-[#1A1A1A] mb-2">{item.title}</h4>
-            <p className="text-sm text-[#666] mb-3">{item.desc}</p>
-            <code className="text-xs font-mono text-[#999] bg-[#F5F5F0] px-2 py-1 rounded">{item.file}</code>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🔒 Gitleaks — обнаруживаемые паттерны</h4>
-        <div className="space-y-2">
-          {[
-            "JWT_ACCESS_SECRET / JWT_REFRESH_SECRET",
-            "DATABASE_URL с credentials",
-            "REDIS_URL с паролем",
-            "S3_SECRET_KEY / MINIO_ROOT_PASSWORD",
-            "Generic password assignments",
-          ].map((p) => (
-            <div key={p} className="flex items-center gap-2 text-sm text-[#444]">
-              <span className="text-[#E63946]">●</span>
-              <code className="font-mono text-xs">{p}</code>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mt-4">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Переменные окружения (.env.example)</h4>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {[
-            "DATABASE_URL", "REDIS_URL", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET",
-            "S3_ENDPOINT", "S3_ACCESS_KEY", "S3_SECRET_KEY", "S3_BUCKET",
-            "API_PORT", "WEB_PORT", "ADMIN_PORT", "CORS_ORIGINS",
-            "SMTP_HOST", "SENTRY_DSN", "PAYMENT_PROVIDER", "MIN_WITHDRAWAL_AMOUNT",
-          ].map((v) => (
-            <code key={v} className="text-xs font-mono text-[#1A1A1A] bg-[#F5F5F0] border border-[#E5E5E5] px-2 py-1 rounded text-center">
-              {v}
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Роли (enum UserRole)</h4>
+        <div className="flex flex-wrap gap-2">
+          {["guest", "creator", "ambassador", "platform_owner", "moderator", "finance", "admin", "superadmin"].map((role) => (
+            <code key={role} className="px-3 py-1.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded-lg text-xs font-mono text-[#1A1A1A]">
+              {role}
             </code>
           ))}
         </div>
@@ -384,121 +240,500 @@ function SecuritySection() {
   );
 }
 
-function CiCdSection() {
+function DirectionASection() {
   return (
     <div>
-      <SectionHeader num="05" title="CI/CD Pipeline" />
-      <p className="text-[#444] mb-8">GitHub Actions. Merge блокируется при падении любого шага.</p>
+      <SectionHeader num="02" title="Направление A: Задания" />
+      <p className="text-[#444] mb-8">Креатор → Кампания → Задания → Амбассадоры выполняют → Проверка → Вознаграждение.</p>
 
-      <div className="relative">
-        <div className="absolute left-6 top-0 bottom-0 w-px bg-[#E5E5E5]"></div>
-        <div className="space-y-6">
+      <ModelCard
+        name="Campaign"
+        color="#FF6B35"
+        fields={[
+          "id: uuid (PK)",
+          "creatorId: string (FK)",
+          "title, description: string",
+          "status: CampaignStatus (FSM)",
+          "budget: Decimal(14,2)",
+          "taskCount: int",
+          "taskReward: Decimal(14,2)",
+          "requirements: jsonb?",
+          "targetAudience: jsonb?",
+          "startsAt, endsAt: datetime?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["creator (Restrict)", "tasks (Cascade)"]}
+        indexes={["creatorId", "status", "createdAt", "startsAt+endsAt"]}
+      />
+
+      <ModelCard
+        name="Task"
+        color="#FF6B35"
+        fields={[
+          "id: uuid (PK)",
+          "campaignId: string (FK)",
+          "ambassadorId: string? (FK)",
+          "status: TaskStatus (FSM)",
+          "title, description: string",
+          "requirements: jsonb?",
+          "proofData: jsonb?",
+          "reviewNotes: string?",
+          "reviewedBy: string?",
+          "takenAt, submittedAt, paidAt, dueAt: datetime?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["campaign (Cascade)", "ambassador (SetNull)"]}
+        indexes={["campaignId", "ambassadorId", "status", "createdAt", "dueAt", "campaignId+status"]}
+      />
+
+      <ModelCard
+        name="AmbassadorProfile"
+        color="#2D9B6E"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (unique, FK)",
+          "isVerified: boolean",
+          "socialLinks: jsonb?",
+          "audienceSize: int?",
+          "niches: string[]",
+          "languages: string[]",
+          "avgEngagement: Decimal(5,2)?",
+          "rating: Decimal(3,2)?",
+          "totalTasks, completedTasks: int",
+          "createdAt, updatedAt",
+        ]}
+        relations={["user (Cascade)", "verifications", "tasks"]}
+        indexes={["userId", "isVerified", "rating"]}
+      />
+
+      <ModelCard
+        name="AmbassadorVerificationRequest"
+        color="#2D9B6E"
+        fields={[
+          "id: uuid (PK)",
+          "ambassadorId: string (FK)",
+          "status: AmbassadorVerificationStatus",
+          "socialLinks: jsonb?",
+          "audienceProof: jsonb?",
+          "niches: string[]",
+          "documents: jsonb?",
+          "reviewedBy: string?",
+          "reviewedAt: datetime?",
+          "rejectionReason: string?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["ambassador (Cascade)"]}
+        indexes={["ambassadorId", "status", "createdAt"]}
+      />
+    </div>
+  );
+}
+
+function DirectionBSection() {
+  return (
+    <div>
+      <SectionHeader num="03" title="Направление B: Рекламные места" />
+      <p className="text-[#444] mb-8">Владелец → Площадка → Рекламное место → Креатор бронирует → Сделка → Выполнение → Выплата.</p>
+
+      <ModelCard
+        name="PlatformOwnerProfile"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (unique, FK)",
+          "isVerified: boolean",
+          "companyName: string?",
+          "legalEntity: string?",
+          "inn, ogrn: string? (Russian tax IDs)",
+          "contactEmail, contactPhone: string?",
+          "rating: Decimal(3,2)?",
+          "totalDeals, completedDeals: int",
+          "createdAt, updatedAt",
+        ]}
+        relations={["user (Cascade)", "platforms"]}
+        indexes={["userId", "isVerified"]}
+      />
+
+      <ModelCard
+        name="Platform"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "ownerId: string (FK)",
+          "name: string",
+          "type: string (telegram, instagram, etc.)",
+          "url: string",
+          "audienceSize: int",
+          "audienceGeo: jsonb?",
+          "audienceAge: jsonb?",
+          "description: string?",
+          "mediaKit: jsonb?",
+          "isVerified: boolean",
+          "createdAt, updatedAt",
+        ]}
+        relations={["owner (Cascade)", "adSlots"]}
+        indexes={["ownerId", "type", "isVerified"]}
+      />
+
+      <ModelCard
+        name="AdSlot"
+        color="#FF6B35"
+        fields={[
+          "id: uuid (PK)",
+          "platformId: string (FK)",
+          "ownerId: string (FK, denormalized)",
+          "title, description: string",
+          "status: AdSlotStatus (FSM)",
+          "pricePerDay: Decimal(14,2)",
+          "currency: string (RUB)",
+          "duration: string (1d, 3d, 7d)",
+          "format: string (post, story, reel)",
+          "availability: jsonb?",
+          "requirements: jsonb?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["platform (Cascade)", "owner (Restrict)", "deals"]}
+        indexes={["platformId", "ownerId", "status", "pricePerDay", "createdAt", "platformId+status"]}
+      />
+
+      <ModelCard
+        name="Deal"
+        color="#FF6B35"
+        fields={[
+          "id: uuid (PK)",
+          "adSlotId: string (FK)",
+          "buyerId: string (FK)",
+          "status: DealStatus (FSM)",
+          "startDate, endDate: datetime",
+          "totalAmount: Decimal(14,2)",
+          "commission: Decimal(14,2) (10%)",
+          "contentBrief: string?",
+          "proofData: jsonb?",
+          "confirmedAt, completedAt: datetime?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["adSlot (Restrict)", "buyer (Restrict)"]}
+        indexes={["adSlotId", "buyerId", "status", "startDate+endDate", "createdAt", "adSlotId+status"]}
+      />
+    </div>
+  );
+}
+
+function FinanceSection() {
+  return (
+    <div>
+      <SectionHeader num="04" title="Финансы" />
+      <p className="text-[#444] mb-4">Double-entry journal. Все операции через FinancialTransaction.</p>
+      <p className="text-sm text-[#E63946] mb-8 border border-[#E63946]/30 rounded-xl p-4 bg-[#E63946]/5">
+        ⚠️ КРИТИЧНО: Баланс = SUM(deposit, reward, refund) − SUM(reserve, payout, fee). Запрещено хранить balance как поле.
+      </p>
+
+      <ModelCard
+        name="FinancialTransaction"
+        color="#E63946"
+        fields={[
+          "id: uuid (PK)",
+          "idempotencyKey: string (unique)",
+          "type: FinancialTransactionType (enum)",
+          "userId: string (FK)",
+          "amount: Decimal(14,2) (always positive)",
+          "currency: string (RUB)",
+          "status: FinancialTransactionStatus",
+          "relatedEntityType: string?",
+          "relatedEntityId: string?",
+          "description: string?",
+          "metadata: jsonb?",
+          "createdAt: datetime",
+        ]}
+        relations={["user (Restrict)"]}
+        indexes={["userId", "idempotencyKey", "type", "status", "createdAt", "userId+type", "userId+createdAt", "relatedEntityType+relatedEntityId"]}
+      />
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы транзакций (enum)</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {[
-            { step: "Install", desc: "npm ci + cache", icon: "📦" },
-            { step: "Lint", desc: "ESLint — без ошибок", icon: "🔍", depends: "install" },
-            { step: "Typecheck", desc: "tsc --noEmit — без ошибок", icon: "📐", depends: "install" },
-            { step: "Test", desc: "Jest + Supertest (e2e) с PostgreSQL и Redis", icon: "🧪", depends: "install" },
-            { step: "Security", desc: "npm audit — критические уязвимости блокируют", icon: "🔒", depends: "install" },
-            { step: "Build", desc: "Production build всех приложений", icon: "🏗️", depends: "lint, typecheck, test" },
-          ].map((item, i) => (
-            <div key={item.step} className="flex items-start gap-4 relative">
-              <div className="w-12 h-12 rounded-xl bg-[#2D9B6E]/10 flex items-center justify-center flex-shrink-0 z-10 border-2 border-[#F5F5F0]">
-                <span className="text-lg">{item.icon}</span>
-              </div>
-              <div className="flex-1 border border-[#E5E5E5] rounded-xl p-4">
-                <div className="flex items-center gap-3 mb-1">
-                  <span className="font-mono text-xs text-[#999]">{String(i + 1).padStart(2, "0")}</span>
-                  <h4 className="font-display font-semibold text-[#1A1A1A]">{item.step}</h4>
-                  <StatusBadge status="done" />
-                </div>
-                <p className="text-sm text-[#666]">{item.desc}</p>
-                {item.depends && (
-                  <p className="text-xs text-[#999] mt-1">Зависит от: <code className="font-mono">{item.depends}</code></p>
-                )}
-              </div>
+            { type: "deposit", desc: "Пополнение", sign: "+" },
+            { type: "reward", desc: "Вознаграждение", sign: "+" },
+            { type: "refund", desc: "Возврат", sign: "+" },
+            { type: "reserve", desc: "Резервирование", sign: "−" },
+            { type: "payout", desc: "Выплата", sign: "−" },
+            { type: "fee", desc: "Комиссия", sign: "−" },
+            { type: "release", desc: "Освобождение", sign: "+" },
+            { type: "adjustment", desc: "Корректировка", sign: "±" },
+          ].map((t) => (
+            <div key={t.type} className="border border-[#E5E5E5] rounded-lg p-3">
+              <code className="text-xs font-mono text-[#1A1A1A]">{t.type}</code>
+              <p className="text-xs text-[#666] mt-1">{t.desc}</p>
+              <p className={`text-sm font-bold mt-1 ${t.sign === "+" ? "text-[#2D9B6E]" : t.sign === "−" ? "text-[#E63946]" : "text-[#F59E0B]"}`}>
+                {t.sign}
+              </p>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
-      <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Триггеры</h4>
-        <div className="flex flex-wrap gap-2">
-          {["push → main", "push → develop", "pull_request → main", "pull_request → develop"].map((t) => (
-            <span key={t} className="px-3 py-1.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded-lg text-xs font-mono text-[#1A1A1A]">
-              {t}
-            </span>
-          ))}
-        </div>
+      <ModelCard
+        name="PayoutRequest"
+        color="#E63946"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (FK)",
+          "amount: Decimal(14,2)",
+          "currency: string (RUB)",
+          "status: PayoutStatus (FSM)",
+          "paymentMethod: string?",
+          "requisites: jsonb? (masked)",
+          "processedBy: string?",
+          "processedAt: datetime?",
+          "errorDetails: string?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["user (Restrict)"]}
+        indexes={["userId", "status", "createdAt", "userId+status"]}
+      />
+
+      <Card className="mt-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Правила финансовой безопасности</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Все операции в ACID-транзакциях (prisma.$transaction)</li>
+          <li>• Идемпотентность через idempotencyKey (unique)</li>
+          <li>• Транзакции неизменяемы (immutable)</li>
+          <li>• SELECT ... FOR UPDATE при работе с балансом</li>
+          <li>• Минимальный вывод: 500 ₽</li>
+          <li>• Ежедневная сверка (reconciliation cron)</li>
+        </ul>
       </Card>
     </div>
   );
 }
 
-function ConstitutionSection() {
+function ModerationSection() {
   return (
     <div>
-      <SectionHeader num="06" title="Конституция проекта" />
-      <p className="text-lg text-[#444] mb-8">
-        Единый источник истины — <code className="font-mono bg-[#F5F5F0] px-2 py-0.5 rounded text-sm">KURUTA_CONTEXT.md</code>
-      </p>
+      <SectionHeader num="05" title="Модерация и споры" />
+      <p className="text-[#444] mb-8">Ручная проверка обязательна. Очередь модерации с приоритетами.</p>
 
-      <Card className="mb-8 border-[#FF6B35]/30 bg-[#FF6B35]/5">
-        <blockquote className="text-[#1A1A1A] italic">
-          "Этот файл — единственный источник истины. Все решения, архитектура, код и поведение системы должны строго соответствовать ему. Любое отклонение запрещено."
-        </blockquote>
+      <ModelCard
+        name="ModerationQueue"
+        color="#F59E0B"
+        fields={[
+          "id: uuid (PK)",
+          "entityType: ModerationQueueType (enum)",
+          "entityId: string",
+          "status: ModerationQueueStatus",
+          "priority: int (higher = urgent)",
+          "assignedTo: string? (moderator)",
+          "assignedAt: datetime?",
+          "reviewedAt: datetime?",
+          "decision: string?",
+          "decisionReason: string?",
+          "metadata: jsonb?",
+          "createdAt, updatedAt",
+        ]}
+        indexes={["entityType+entityId", "status", "priority+createdAt", "assignedTo", "createdAt"]}
+      />
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы модерации (enum)</h4>
+        <div className="flex flex-wrap gap-2">
+          {[
+            "ambassador_verification",
+            "platform_owner_verification",
+            "campaign",
+            "task",
+            "deal",
+            "dispute",
+            "payout",
+          ].map((type) => (
+            <code key={type} className="px-3 py-1.5 bg-[#F5F5F0] border border-[#E5E5E5] rounded-lg text-xs font-mono text-[#1A1A1A]">
+              {type}
+            </code>
+          ))}
+        </div>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Что продаёт KURUTA</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Контролируемый результат</li>
-            <li>• Выполненные размещения</li>
-            <li>• Организованные сделки</li>
-            <li>• Проверку и безопасность</li>
-            <li>• Репутацию</li>
-          </ul>
-        </Card>
-        <Card>
-          <h4 className="font-semibold text-[#E63946] mb-3">✗ Что НЕ продаёт</h4>
-          <ul className="text-sm text-[#444] space-y-1.5">
-            <li>• Просмотры</li>
-            <li>• Подписчиков</li>
-            <li>• Вирусность</li>
-            <li>• Попадания в рекомендации</li>
-            <li>• Гарантированный рост</li>
-          </ul>
-        </Card>
-      </div>
+      <ModelCard
+        name="Dispute"
+        color="#E63946"
+        fields={[
+          "id: uuid (PK)",
+          "openedBy: string (FK)",
+          "relatedType: string (task, deal)",
+          "relatedId: string",
+          "status: DisputeStatus (FSM)",
+          "reason: string",
+          "description: string?",
+          "evidence: jsonb?",
+          "resolution: string?",
+          "resolvedBy: string?",
+          "resolvedAt: datetime?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["opener (Restrict)"]}
+        indexes={["openedBy", "relatedType+relatedId", "status", "createdAt"]}
+      />
+    </div>
+  );
+}
 
-      <div className="space-y-3">
-        <h4 className="font-display font-semibold text-[#1A1A1A]">Следующие шаги</h4>
+function SystemSection() {
+  return (
+    <div>
+      <SectionHeader num="06" title="Системные сущности" />
+      <p className="text-[#444] mb-8">Аудит, уведомления, антифрод, сессии.</p>
+
+      <ModelCard
+        name="AuditLog"
+        color="#1A1A1A"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string? (FK)",
+          "action: string",
+          "entityType: string",
+          "entityId: string",
+          "before: jsonb? (previous state)",
+          "after: jsonb? (new state)",
+          "ip: string?",
+          "userAgent: string?",
+          "timestamp: datetime",
+        ]}
+        relations={["user (SetNull)"]}
+        indexes={["userId", "entityType+entityId", "action", "timestamp", "userId+timestamp"]}
+      />
+
+      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-2">⚠️ Append-only</h4>
+        <p className="text-sm text-[#444]">AuditLog <strong>НЕ имеет updatedAt</strong>. Записи только добавляются, никогда не изменяются. Хранение — минимум 3 года.</p>
+      </Card>
+
+      <ModelCard
+        name="Notification"
+        color="#6366F1"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (FK)",
+          "type: NotificationType (enum)",
+          "title: string",
+          "body: string",
+          "data: jsonb? (deep link, refs)",
+          "readAt: datetime?",
+          "createdAt: datetime",
+        ]}
+        relations={["user (Cascade)"]}
+        indexes={["userId+readAt", "userId+createdAt", "type"]}
+      />
+
+      <ModelCard
+        name="AntiFraudSignal"
+        color="#E63946"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string? (FK)",
+          "type: AntiFraudSignalType (enum)",
+          "severity: AntiFraudSignalSeverity",
+          "title: string",
+          "description: string",
+          "metadata: jsonb? (evidence)",
+          "reviewedBy: string?",
+          "reviewedAt: datetime?",
+          "resolved: boolean",
+          "resolution: string?",
+          "createdAt, updatedAt",
+        ]}
+        relations={["user (SetNull)"]}
+        indexes={["userId", "type", "severity", "resolved", "createdAt", "userId+type"]}
+      />
+
+      <ModelCard
+        name="Session"
+        color="#999"
+        fields={[
+          "id: uuid (PK)",
+          "userId: string (FK)",
+          "refreshToken: string (unique, hashed)",
+          "userAgent: string?",
+          "ip: string?",
+          "expiresAt: datetime",
+          "revokedAt: datetime?",
+          "createdAt: datetime",
+        ]}
+        relations={["user (Cascade)"]}
+        indexes={["userId", "expiresAt"]}
+      />
+    </div>
+  );
+}
+
+function IndexesSection() {
+  return (
+    <div>
+      <SectionHeader num="07" title="Индексы и оптимизация" />
+      <p className="text-[#444] mb-8">Индексы на всех FK, email/phone (unique), составные индексы для частых запросов.</p>
+
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
         {[
-          { step: "Установить зависимости", cmd: "cd apps/api && npm install" },
-          { step: "Применить миграции", cmd: "cd packages/database && npx prisma migrate dev" },
-          { step: "Запустить API", cmd: "cd apps/api && npm run start:dev" },
-          { step: "Запустить Web", cmd: "cd apps/web && npm run dev" },
-        ].map((item, i) => (
-          <div key={i} className="flex items-center gap-4 border border-[#E5E5E5] rounded-xl p-4">
-            <span className="font-mono text-xs text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded">{String(i + 1).padStart(2, "0")}</span>
-            <span className="text-sm text-[#1A1A1A] flex-1">{item.step}</span>
-            <code className="text-xs font-mono text-[#666] bg-[#F5F5F0] px-2 py-1 rounded">{item.cmd}</code>
-          </div>
+          { category: "Unique индексы", items: ["User.email", "User.phone", "FinancialTransaction.idempotencyKey", "Session.refreshToken"] },
+          { category: "Составные индексы", items: ["Task(campaignId, status)", "Deal(adSlotId, status)", "FinancialTransaction(userId, createdAt)", "AuditLog(userId, timestamp)"] },
+          { category: "FK индексы", items: ["Все foreign key поля", "userId в связанных таблицах", "campaignId, adSlotId, etc."] },
+          { category: "Статусные индексы", items: ["Все status поля", "createdAt для сортировки", "priority+createdAt для очереди"] },
+        ].map((group) => (
+          <Card key={group.category}>
+            <h4 className="font-display font-semibold text-[#1A1A1A] mb-3 text-sm uppercase tracking-wider">{group.category}</h4>
+            <div className="space-y-2">
+              {group.items.map((item) => (
+                <code key={item} className="block text-xs font-mono text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded">
+                  {item}
+                </code>
+              ))}
+            </div>
+          </Card>
         ))}
       </div>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• <code className="font-mono bg-white px-1.5 py-0.5 rounded">npx prisma validate</code> — без ошибок</li>
+          <li>• <code className="font-mono bg-white px-1.5 py-0.5 rounded">npx prisma migrate dev --name init</code> — проходит</li>
+          <li>• Все 18 сущностей присутствуют</li>
+          <li>• Деньги только Decimal(14,2)</li>
+          <li>• Баланс НЕ хранится в User</li>
+          <li>• AuditLog append-only (нет updatedAt)</li>
+          <li>• Cascade delete только где безопасно</li>
+          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(database): initial schema</code></li>
+        </ul>
+      </Card>
+
+      <Card className="mt-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Следующие шаги</h4>
+        <div className="space-y-2">
+          {[
+            { step: "Применить миграцию", cmd: "cd packages/database && npx prisma migrate dev --name init" },
+            { step: "Сгенерировать клиент", cmd: "npx prisma generate" },
+            { step: "Открыть Studio", cmd: "npx prisma studio" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-4">
+              <span className="font-mono text-xs text-[#FF6B35] bg-[#FF6B35]/10 px-2 py-0.5 rounded">{String(i + 1).padStart(2, "0")}</span>
+              <span className="text-sm text-[#1A1A1A] flex-1">{item.step}</span>
+              <code className="text-xs font-mono text-[#666] bg-[#F5F5F0] px-2 py-1 rounded">{item.cmd}</code>
+            </div>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
-  structure: StructureSection,
-  infrastructure: InfrastructureSection,
-  database: DatabaseSection,
-  security: SecuritySection,
-  "ci-cd": CiCdSection,
-  constitution: ConstitutionSection,
+  users: UsersSection,
+  "direction-a": DirectionASection,
+  "direction-b": DirectionBSection,
+  finance: FinanceSection,
+  moderation: ModerationSection,
+  system: SystemSection,
+  indexes: IndexesSection,
 };
 
 export default function App() {
@@ -518,7 +753,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Monorepo Init</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Database Schema</p>
             </div>
           </div>
 
@@ -536,8 +771,8 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">chore: init monorepo</span>
-            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">INITIALIZED</span>
+            <span className="text-xs text-[#999] font-mono">PostgreSQL 16 + Prisma</span>
+            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">18 MODELS</span>
           </div>
         </div>
       </header>

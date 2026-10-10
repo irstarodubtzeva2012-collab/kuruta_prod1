@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────────
 // KURUTA — Prisma Schema
 // Единственная БД: PostgreSQL 16
+// Конституция: KURUTA_CONTEXT.md
 // ─────────────────────────────────────────────────────────────────
 
 generator client {
@@ -32,7 +33,7 @@ enum UserStatus {
   deleted
 }
 
-enum AmbassadorApplicationStatus {
+enum AmbassadorVerificationStatus {
   draft
   pending
   needs_info
@@ -106,6 +107,24 @@ enum DisputeStatus {
   closed
 }
 
+enum ModerationQueueType {
+  ambassador_verification
+  platform_owner_verification
+  campaign
+  task
+  deal
+  dispute
+  payout
+}
+
+enum ModerationQueueStatus {
+  pending
+  in_progress
+  approved
+  rejected
+  needs_revision
+}
+
 enum FinancialTransactionType {
   deposit
   reserve
@@ -124,15 +143,45 @@ enum FinancialTransactionStatus {
   refunded
 }
 
+enum NotificationType {
+  task_assigned
+  task_completed
+  task_rejected
+  payout_requested
+  payout_processed
+  dispute_opened
+  dispute_resolved
+  campaign_approved
+  campaign_rejected
+  deal_created
+  deal_completed
+  verification_approved
+  verification_rejected
+}
+
+enum AntiFraudSignalType {
+  duplicate_device_fingerprint
+  duplicate_payout_requisites
+  suspicious_fast_completion
+  duplicate_proof_screenshots
+  sudden_audience_growth
+  unusual_activity_pattern
+}
+
+enum AntiFraudSignalSeverity {
+  low
+  medium
+  high
+  critical
+}
+
 // ─── User ─────────────────────────────────────────────────────────
 
 model User {
   id            String      @id @default(uuid())
   email         String      @unique
-  passwordHash  String
   phone         String?     @unique
-  displayName   String?
-  avatarUrl     String?
+  passwordHash  String
   status        UserStatus  @default(active)
   totpSecret    String?     // encrypted
   totpEnabled   Boolean     @default(false)
@@ -140,87 +189,208 @@ model User {
   updatedAt     DateTime    @updatedAt
 
   // Relations
-  roles         UserRole[]
-  applications  AmbassadorApplication[]
+  profile       UserProfile?
+  roles         UserRoleAssignment[]
+  ambassadorProfile      AmbassadorProfile?
+  platformOwnerProfile   PlatformOwnerProfile?
   campaigns     Campaign[]
-  tasks         Task[]
+  tasks         Task[]           @relation("TaskAmbassador")
   adSlots       AdSlot[]
-  deals         Deal[]
+  deals         Deal[]           @relation("DealBuyer")
   transactions  FinancialTransaction[]
-  payouts       Payout[]
-  disputes      Dispute[]
+  payouts       PayoutRequest[]
+  disputes      Dispute[]        @relation("DisputeOpener")
   notifications Notification[]
   sessions      Session[]
+  auditLogs     AuditLog[]
+  antiFraudSignals AntiFraudSignal[]
 
+  @@index([email])
+  @@index([phone])
+  @@index([status])
+  @@index([createdAt])
   @@map("users")
 }
 
-// ─── User Roles (many-to-many) ────────────────────────────────────
+// ─── UserProfile ──────────────────────────────────────────────────
 
-model UserRole {
-  id       String   @id @default(uuid())
-  userId   String
-  role     UserRole
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+model UserProfile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  displayName   String?
+  avatarUrl     String?
+  bio           String?
+  country       String?
+  city          String?
+  timezone      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_profiles")
+}
+
+// ─── UserRoleAssignment (many-to-many) ────────────────────────────
+
+model UserRoleAssignment {
+  id        String   @id @default(uuid())
+  userId    String
+  role      UserRole
   grantedAt DateTime @default(now())
   grantedBy String?  // userId of admin who granted
 
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, role])
-  @@map("user_roles")
+  @@index([userId])
+  @@index([role])
+  @@map("user_role_assignments")
 }
 
-// ─── Ambassador Application ──────────────────────────────────────
+// ─── AmbassadorProfile ───────────────────────────────────────────
 
-model AmbassadorApplication {
-  id            String                      @id @default(uuid())
-  userId        String
-  status        AmbassadorApplicationStatus @default(draft)
-  socialLinks   Json?                       // jsonb
-  audienceSize  Int?
-  niches        String[]                    // array
-  documents     Json?                       // jsonb — uploaded files metadata
-  reviewedBy    String?                     // moderator userId
-  reviewedAt    DateTime?
+model AmbassadorProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  isVerified      Boolean  @default(false)
+  socialLinks     Json?    // jsonb: { telegram, instagram, youtube, etc. }
+  audienceSize    Int?
+  niches          String[] // array
+  languages       String[] // array
+  avgEngagement   Decimal? @db.Decimal(5, 2) // percentage
+  rating          Decimal? @db.Decimal(3, 2) // 0.00 - 5.00
+  totalTasks      Int      @default(0)
+  completedTasks  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verifications   AmbassadorVerificationRequest[]
+  tasks           Task[]
+
+  @@index([userId])
+  @@index([isVerified])
+  @@index([rating])
+  @@map("ambassador_profiles")
+}
+
+// ─── AmbassadorVerificationRequest ───────────────────────────────
+
+model AmbassadorVerificationRequest {
+  id              String                       @id @default(uuid())
+  ambassadorId    String
+  status          AmbassadorVerificationStatus @default(draft)
+  socialLinks     Json?                        // jsonb
+  audienceProof   Json?                        // jsonb: screenshots, analytics
+  niches          String[]
+  documents       Json?                        // jsonb: uploaded files metadata
+  reviewedBy      String?                      // moderator userId
+  reviewedAt      DateTime?
   rejectionReason String?
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
 
-  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ambassador      AmbassadorProfile            @relation(fields: [ambassadorId], references: [id], onDelete: Cascade)
 
-  @@map("ambassador_applications")
+  @@index([ambassadorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ambassador_verification_requests")
 }
 
-// ─── Campaign ─────────────────────────────────────────────────────
+// ─── PlatformOwnerProfile ────────────────────────────────────────
+
+model PlatformOwnerProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  isVerified      Boolean  @default(false)
+  companyName     String?
+  legalEntity     String?
+  inn             String?  // Russian tax ID
+  ogrn            String?  // Russian registration number
+  contactEmail    String?
+  contactPhone    String?
+  rating          Decimal? @db.Decimal(3, 2)
+  totalDeals      Int      @default(0)
+  completedDeals  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platforms       Platform[]
+
+  @@index([userId])
+  @@index([isVerified])
+  @@map("platform_owner_profiles")
+}
+
+// ─── Platform ────────────────────────────────────────────────────
+
+model Platform {
+  id              String   @id @default(uuid())
+  ownerId         String
+  name            String
+  type            String   // telegram, instagram, youtube, vk, tiktok, etc.
+  url             String
+  audienceSize    Int
+  audienceGeo     Json?    // jsonb: { "RU": 60, "US": 20, ... }
+  audienceAge     Json?    // jsonb: { "18-24": 30, "25-34": 45, ... }
+  description     String?
+  mediaKit        Json?    // jsonb: additional info, stats
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  owner           PlatformOwnerProfile @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  adSlots         AdSlot[]
+
+  @@index([ownerId])
+  @@index([type])
+  @@index([isVerified])
+  @@map("platforms")
+}
+
+// ─── Campaign (Direction A) ──────────────────────────────────────
 
 model Campaign {
-  id            String          @id @default(uuid())
-  creatorId     String
-  title         String
-  description   String
-  status        CampaignStatus  @default(draft)
-  budget        Decimal         @db.Decimal(14, 2)
-  taskCount     Int
-  taskReward    Decimal         @db.Decimal(14, 2)
-  requirements  Json?           // jsonb
-  startsAt      DateTime?
-  endsAt        DateTime?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id              String          @id @default(uuid())
+  creatorId       String
+  title           String
+  description     String
+  status          CampaignStatus  @default(draft)
+  budget          Decimal         @db.Decimal(14, 2)
+  taskCount       Int
+  taskReward      Decimal         @db.Decimal(14, 2)
+  requirements    Json?           // jsonb: task requirements, guidelines
+  targetAudience  Json?           // jsonb: demographics, interests
+  startsAt        DateTime?
+  endsAt          DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  creator       User   @relation(fields: [creatorId], references: [id])
-  tasks         Task[]
+  creator         User   @relation(fields: [creatorId], references: [id], onDelete: Restrict)
+  tasks           Task[]
 
+  @@index([creatorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([startsAt, endsAt])
   @@map("campaigns")
 }
 
-// ─── Task ─────────────────────────────────────────────────────────
+// ─── Task (Direction A) ──────────────────────────────────────────
 
 model Task {
   id              String      @id @default(uuid())
   campaignId      String
   ambassadorId    String?
   status          TaskStatus  @default(available)
-  proofData       Json?       // jsonb — screenshots, links, etc.
+  title           String
+  description     String
+  requirements    Json?       // jsonb: specific requirements
+  proofData       Json?       // jsonb: screenshots, links, etc.
   reviewNotes     String?
   reviewedBy      String?     // moderator userId
   reviewedAt      DateTime?
@@ -231,37 +401,50 @@ model Task {
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  campaign        Campaign @relation(fields: [campaignId], references: [id])
-  ambassador      User?    @relation(fields: [ambassadorId], references: [id])
+  campaign        Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  ambassador      User?    @relation("TaskAmbassador", fields: [ambassadorId], references: [id], onDelete: SetNull)
 
+  @@index([campaignId])
+  @@index([ambassadorId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([dueAt])
+  @@index([campaignId, status])
   @@map("tasks")
 }
 
-// ─── Ad Slot ──────────────────────────────────────────────────────
+// ─── AdSlot (Direction B) ────────────────────────────────────────
 
 model AdSlot {
   id              String        @id @default(uuid())
-  ownerId         String
+  platformId      String
+  ownerId         String        // denormalized for faster queries
   title           String
   description     String
   status          AdSlotStatus  @default(draft)
-  platform        String        // telegram, instagram, youtube, etc.
-  platformUrl     String
-  audienceSize    Int
   pricePerDay     Decimal       @db.Decimal(14, 2)
   currency        String        @default("RUB")
-  mediaKit        Json?         // jsonb
-  availability    Json?         // jsonb — calendar
+  duration        String        // "1d", "3d", "7d", etc.
+  format          String        // "post", "story", "reel", "video", etc.
+  availability    Json?         // jsonb: calendar of available dates
+  requirements    Json?         // jsonb: content requirements
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  owner           User   @relation(fields: [ownerId], references: [id])
+  platform        Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  owner           User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
   deals           Deal[]
 
+  @@index([platformId])
+  @@index([ownerId])
+  @@index([status])
+  @@index([pricePerDay])
+  @@index([createdAt])
+  @@index([platformId, status])
   @@map("ad_slots")
 }
 
-// ─── Deal (booking) ──────────────────────────────────────────────
+// ─── Deal (Direction B) ──────────────────────────────────────────
 
 model Deal {
   id              String      @id @default(uuid())
@@ -273,61 +456,104 @@ model Deal {
   totalAmount     Decimal     @db.Decimal(14, 2)
   commission      Decimal     @db.Decimal(14, 2) // 10%
   contentBrief    String?
-  proofData       Json?       // jsonb
+  proofData       Json?       // jsonb: published content proof
   confirmedAt     DateTime?
   completedAt     DateTime?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  adSlot          AdSlot @relation(fields: [adSlotId], references: [id])
-  buyer           User   @relation(fields: [buyerId], references: [id])
+  adSlot          AdSlot @relation(fields: [adSlotId], references: [id], onDelete: Restrict)
+  buyer           User   @relation("DealBuyer", fields: [buyerId], references: [id], onDelete: Restrict)
 
+  @@index([adSlotId])
+  @@index([buyerId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@index([createdAt])
+  @@index([adSlotId, status])
   @@map("deals")
 }
 
-// ─── Financial Transaction (double-entry journal) ─────────────────
+// ─── FinancialTransaction (double-entry journal) ─────────────────
 
 model FinancialTransaction {
-  id                String                    @id @default(uuid())
-  idempotencyKey    String                    @unique
+  id                String                     @id @default(uuid())
+  idempotencyKey    String                     @unique
   type              FinancialTransactionType
   userId            String
-  amount            Decimal                   @db.Decimal(14, 2) // always positive
-  currency          String                    @default("RUB")
+  amount            Decimal                    @db.Decimal(14, 2) // always positive
+  currency          String                     @default("RUB")
   status            FinancialTransactionStatus @default(pending)
-  relatedEntityType String?                   // campaign, task, ad_slot, deal, dispute, payout
+  relatedEntityType String?                    // campaign, task, ad_slot, deal, dispute, payout
   relatedEntityId   String?
   description       String?
-  metadata          Json?                     // jsonb
-  createdAt         DateTime                  @default(now())
+  metadata          Json?                      // jsonb: additional data
+  createdAt         DateTime                   @default(now())
 
-  user              User @relation(fields: [userId], references: [id])
+  user              User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
+  @@index([userId])
+  @@index([idempotencyKey])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, type])
+  @@index([userId, createdAt])
+  @@index([relatedEntityType, relatedEntityId])
   @@map("financial_transactions")
 }
 
-// ─── Payout ───────────────────────────────────────────────────────
+// ─── PayoutRequest ───────────────────────────────────────────────
 
-model Payout {
+model PayoutRequest {
   id              String        @id @default(uuid())
   userId          String
   amount          Decimal       @db.Decimal(14, 2)
   currency        String        @default("RUB")
   status          PayoutStatus  @default(requested)
-  paymentMethod   String?       // card, sbp, etc.
-  requisites      Json?         // jsonb — masked
+  paymentMethod   String?       // card, sbp, crypto, etc.
+  requisites      Json?         // jsonb: masked payment details
   processedBy     String?       // finance userId
   processedAt     DateTime?
   errorDetails    String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user            User @relation(fields: [userId], references: [id])
+  user            User @relation(fields: [userId], references: [id], onDelete: Restrict)
 
-  @@map("payouts")
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
+  @@map("payout_requests")
 }
 
-// ─── Dispute ──────────────────────────────────────────────────────
+// ─── ModerationQueue ─────────────────────────────────────────────
+
+model ModerationQueue {
+  id              String                 @id @default(uuid())
+  entityType      ModerationQueueType
+  entityId        String
+  status          ModerationQueueStatus  @default(pending)
+  priority        Int                    @default(0) // higher = more urgent
+  assignedTo      String?                // moderator userId
+  assignedAt      DateTime?
+  reviewedAt      DateTime?
+  decision        String?                // approved, rejected, needs_revision
+  decisionReason  String?
+  metadata        Json?                  // jsonb: context for moderator
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  @@index([entityType, entityId])
+  @@index([status])
+  @@index([priority, createdAt])
+  @@index([assignedTo])
+  @@index([createdAt])
+  @@map("moderation_queue")
+}
+
+// ─── Dispute ─────────────────────────────────────────────────────
 
 model Dispute {
   id              String          @id @default(uuid())
@@ -336,69 +562,110 @@ model Dispute {
   relatedId       String
   status          DisputeStatus   @default(opened)
   reason          String
-  evidence        Json?           // jsonb
+  description     String?
+  evidence        Json?           // jsonb: screenshots, messages, etc.
   resolution      String?
   resolvedBy      String?         // moderator userId
   resolvedAt      DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  opener          User @relation(fields: [openedBy], references: [id])
+  opener          User @relation("DisputeOpener", fields: [openedBy], references: [id], onDelete: Restrict)
 
+  @@index([openedBy])
+  @@index([relatedType, relatedId])
+  @@index([status])
+  @@index([createdAt])
   @@map("disputes")
 }
 
-// ─── Session (refresh tokens) ─────────────────────────────────────
-
-model Session {
-  id          String    @id @default(uuid())
-  userId      String
-  refreshToken String   @unique // hashed
-  userAgent   String?
-  ip          String?
-  expiresAt   DateTime
-  revokedAt   DateTime?
-  createdAt   DateTime  @default(now())
-
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("sessions")
-}
-
-// ─── Notification ─────────────────────────────────────────────────
-
-model Notification {
-  id          String    @id @default(uuid())
-  userId      String
-  type        String    // enum-like: task_assigned, payout_processed, etc.
-  title       String
-  body        String
-  data        Json?     // jsonb — deep link, entity refs
-  readAt      DateTime?
-  createdAt   DateTime  @default(now())
-
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, readAt])
-  @@map("notifications")
-}
-
-// ─── Audit Log (append-only) ─────────────────────────────────────
+// ─── AuditLog (append-only, NO updatedAt) ────────────────────────
 
 model AuditLog {
   id          String   @id @default(uuid())
   userId      String?
-  action      String
+  action      String   // e.g., "user.login", "transaction.create", "task.update"
   entityType  String
   entityId    String
-  before      Json?    // jsonb
-  after       Json?    // jsonb
+  before      Json?    // jsonb: previous state
+  after       Json?    // jsonb: new state
   ip          String?
   userAgent   String?
   timestamp   DateTime @default(now())
 
-  @@index([entityType, entityId])
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([userId])
+  @@index([entityType, entityId])
   @@index([action])
+  @@index([timestamp])
+  @@index([userId, timestamp])
   @@map("audit_log")
+}
+
+// ─── Notification ────────────────────────────────────────────────
+
+model Notification {
+  id          String           @id @default(uuid())
+  userId      String
+  type        NotificationType
+  title       String
+  body        String
+  data        Json?            // jsonb: deep link, entity refs
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+// ─── Session (refresh tokens) ────────────────────────────────────
+
+model Session {
+  id           String    @id @default(uuid())
+  userId       String
+  refreshToken String    @unique // hashed
+  userAgent    String?
+  ip           String?
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+// ─── AntiFraudSignal ─────────────────────────────────────────────
+
+model AntiFraudSignal {
+  id            String                   @id @default(uuid())
+  userId        String?
+  type          AntiFraudSignalType
+  severity      AntiFraudSignalSeverity
+  title         String
+  description   String
+  metadata      Json?                    // jsonb: evidence, context
+  reviewedBy    String?                  // moderator userId
+  reviewedAt    DateTime?
+  resolved      Boolean                  @default(false)
+  resolution    String?
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+
+  user          User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([type])
+  @@index([severity])
+  @@index([resolved])
+  @@index([createdAt])
+  @@index([userId, type])
+  @@map("anti_fraud_signals")
 }
