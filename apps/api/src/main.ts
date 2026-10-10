@@ -8,6 +8,7 @@ import { ConfigService } from "@nestjs/config";
 import helmet from "helmet";
 import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
+import { SsrfProtectionMiddleware } from "./common/middleware/ssrf-protection.middleware";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -27,16 +28,32 @@ async function bootstrap() {
         directives: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'"],
-          styleSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+          styleSrc: ["'self'", "'unsafe-inline'"], // Для Tailwind
+          imgSrc: ["'self'", "data:", "https:", "blob:"],
+          connectSrc: ["'self'", configService.get<string>("API_URL", "http://localhost:4000")],
+          fontSrc: ["'self'", "https://fonts.gstatic.com"],
+          objectSrc: ["'none'"],
+          mediaSrc: ["'self'"],
+          frameSrc: ["'none'"],
+          baseUri: ["'self'"],
+          formAction: ["'self'"],
         },
       },
       hsts: {
         maxAge: 31536000,
         includeSubDomains: true,
+        preload: true,
       },
+      referrerPolicy: {
+        policy: "strict-origin-when-cross-origin",
+      },
+      noSniff: {},
+      xssFilter: {},
     }),
   );
+
+  // ─── SSRF Protection ──────────────────────────────────────────
+  app.use(new SsrfProtectionMiddleware().use);
 
   // ─── CORS ─────────────────────────────────────────────────────
   const corsOrigins = configService
