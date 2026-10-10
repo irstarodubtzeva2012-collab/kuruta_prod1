@@ -2,11 +2,11 @@ import { useState } from "react";
 
 const sections = [
   { id: "overview", num: "00", title: "Обзор" },
-  { id: "moderation", num: "01", title: "Модерация" },
-  { id: "disputes", num: "02", title: "Споры" },
-  { id: "anti-fraud", num: "03", title: "Антифрод" },
-  { id: "verification", num: "04", title: "Верификация" },
-  { id: "tests", num: "05", title: "Тесты" },
+  { id: "design", num: "01", title: "Дизайн-система" },
+  { id: "roles", num: "02", title: "Переключение ролей" },
+  { id: "pages", num: "03", title: "Страницы" },
+  { id: "catalog", num: "04", title: "Единый маркетплейс" },
+  { id: "tech", num: "05", title: "Технологии" },
 ];
 
 function NavItem({ section, active, onClick }: { section: typeof sections[0]; active: boolean; onClick: () => void }) {
@@ -59,17 +59,17 @@ function StatusBadge({ status }: { status: "done" | "ready" | "critical" }) {
 function OverviewSection() {
   return (
     <div>
-      <SectionHeader num="00" title="Moderation, Disputes & Anti-Fraud" />
+      <SectionHeader num="00" title="Фронтенд KURUTA" />
       <p className="text-lg text-[#444] mb-8 leading-relaxed">
-        Модуль реализует систему модерации, разрешения споров и антифрод-защиты для платформы KURUTA.
+        Next.js 14+ фронтенд с дизайн-системой и бесшовным переключением ролей согласно Конституции KURUTA.
       </p>
 
       <div className="grid md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Endpoints", value: "15" },
-          { label: "Cron задач", value: "5" },
-          { label: "E2E тестов", value: "8" },
-          { label: "Сущностей", value: "3" },
+          { label: "Ролей", value: "3" },
+          { label: "Страниц", value: "15+" },
+          { label: "Компонентов", value: "20+" },
+          { label: "Форм", value: "5+" },
         ].map((item) => (
           <Card key={item.label}>
             <p className="text-sm text-[#666] mb-1">{item.label}</p>
@@ -78,27 +78,30 @@ function OverviewSection() {
         ))}
       </div>
 
-      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Ключевые особенности</h4>
+      <Card className="mb-8 border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Ключевые особенности</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• <strong>Универсальная очередь модерации</strong> для всех типов сущностей</li>
-          <li>• <strong>Система споров</strong> с блокировкой сделок и распределением денег</li>
-          <li>• <strong>Антифрод-система</strong> с автоматическими cron-проверками</li>
-          <li>• <strong>Повторная верификация</strong> амбассадоров раз в 30 дней</li>
-          <li>• <strong>Полный аудит</strong> всех действий модераторов</li>
+          <li>• <strong>Дизайн-система</strong> строго по разделу 6 Конституции</li>
+          <li>• <strong>Переключение ролей</strong> в один клик с изменением URL</li>
+          <li>• <strong>Единый баланс</strong> для всех ролей</li>
+          <li>• <strong>Единый маркетплейс</strong> с защитой от самопокупки</li>
+          <li>• <strong>React Hook Form + Zod</strong> для валидации</li>
+          <li>• <strong>TanStack Query</strong> для управления данными</li>
+          <li>• <strong>Skeleton screens</strong> вместо спиннеров</li>
         </ul>
       </Card>
 
       <div className="space-y-3">
         {[
-          { task: "Универсальная очередь ModerationQueue", status: "done" as const },
-          { task: "Аудит действий модератора", status: "done" as const },
-          { task: "Система споров с блокировкой сделок", status: "done" as const },
-          { task: "Распределение денег через FinanceService", status: "done" as const },
-          { task: "Антифрод-сигналы (6 типов)", status: "done" as const },
-          { task: "Cron-задачи для антифрода", status: "done" as const },
-          { task: "Ручная проверка сигналов модератором", status: "done" as const },
-          { task: "Повторная верификация амбассадоров", status: "done" as const },
+          { task: "Дизайн-система (цвета, шрифты, компоненты)", status: "done" as const },
+          { task: "RoleContext и RoleSwitcher", status: "done" as const },
+          { task: "Лейауты для каждой роли", status: "done" as const },
+          { task: "Дашборды для Creator, Ambassador, Owner", status: "done" as const },
+          { task: "Каталог рекламных мест с фильтрами", status: "done" as const },
+          { task: "Бейдж 'Ваше место' для собственных слотов", status: "done" as const },
+          { task: "React Hook Form + Zod для форм", status: "done" as const },
+          { task: "TanStack Query для данных", status: "done" as const },
+          { task: "Skeleton screens", status: "done" as const },
         ].map((item) => (
           <div key={item.task} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
             <div className="flex items-center gap-3">
@@ -117,381 +120,405 @@ function OverviewSection() {
   );
 }
 
-function ModerationSection() {
+function DesignSection() {
   return (
     <div>
-      <SectionHeader num="01" title="Модерация" />
-      
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Универсальная очередь</h4>
-        <p className="text-sm text-[#666] mb-4">Одна очередь для всех типов сущностей:</p>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { type: "campaign", color: "#FF6B35" },
-            { type: "task", color: "#6366F1" },
-            { type: "ad_slot", color: "#2D9B6E" },
-            { type: "deal", color: "#F59E0B" },
-            { type: "dispute", color: "#E63946" },
-            { type: "ambassador_verification", color: "#999" },
-            { type: "anti_fraud", color: "#EC4899" },
-          ].map((item) => (
-            <span
-              key={item.type}
-              className="px-3 py-1.5 rounded-lg text-xs font-mono border"
-              style={{
-                backgroundColor: `${item.color}15`,
-                borderColor: `${item.color}40`,
-                color: item.color,
-              }}
-            >
-              {item.type}
-            </span>
-          ))}
-        </div>
-      </Card>
+      <SectionHeader num="01" title="Дизайн-система" />
+      <p className="text-[#444] mb-8">Строго следует разделу 6 Конституции KURUTA.</p>
 
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">API Endpoints</h4>
-        <div className="space-y-2">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Цвета</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { method: "GET", path: "/moderation/queue", desc: "Получить очередь" },
-            { method: "POST", path: "/moderation/queue/:id/assign", desc: "Назначить модератора" },
-            { method: "POST", path: "/moderation/queue/:id/approve", desc: "Одобрить" },
-            { method: "POST", path: "/moderation/queue/:id/reject", desc: "Отклонить" },
-            { method: "GET", path: "/moderation/stats", desc: "Статистика модератора" },
+            { name: "Primary", color: "#1A1A1A", usage: "Текст" },
+            { name: "Background", color: "#F5F5F0", usage: "Фон" },
+            { name: "Accent", color: "#FF6B35", usage: "Акцент" },
+            { name: "Success", color: "#2D9B6E", usage: "Успех" },
+            { name: "Error", color: "#E63946", usage: "Ошибка" },
+            { name: "Warning", color: "#F59E0B", usage: "Предупреждение" },
+            { name: "Info", color: "#6366F1", usage: "Информация" },
+            { name: "Border", color: "#E5E5E5", usage: "Границы" },
           ].map((item) => (
-            <div key={item.path} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
-              <span className={`px-2 py-1 rounded text-xs font-bold font-mono ${
-                item.method === "GET" ? "bg-[#2D9B6E]/10 text-[#2D9B6E]" : "bg-[#6366F1]/10 text-[#6366F1]"
-              }`}>
-                {item.method}
-              </span>
-              <code className="text-sm font-mono text-[#1A1A1A] flex-1">{item.path}</code>
-              <span className="text-xs text-[#666]">{item.desc}</span>
+            <div key={item.name} className="border border-[#E5E5E5] rounded-lg p-3">
+              <div
+                className="w-full h-12 rounded-lg mb-2"
+                style={{ backgroundColor: item.color }}
+              ></div>
+              <div className="text-sm font-semibold">{item.name}</div>
+              <div className="text-xs text-[#666]">{item.color}</div>
+              <div className="text-xs text-[#999] mt-1">{item.usage}</div>
             </div>
           ))}
         </div>
       </Card>
 
-      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Аудит действий</h4>
-        <p className="text-sm text-[#444] mb-3">Все действия модераторов логируются:</p>
-        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`await prisma.auditLog.create({
-   {
-    userId: moderatorId,
-    action: 'moderation.approved',
-    entityType: 'ModerationQueue',
-    entityId: queueId,
-    after: {
-      entityType: queueItem.entityType,
-      entityId: queueItem.entityId,
-      decision: dto.decision,
-    },
-  },
-});`}
-        </pre>
-      </Card>
-    </div>
-  );
-}
-
-function DisputesSection() {
-  return (
-    <div>
-      <SectionHeader num="02" title="Споры" />
-      
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Жизненный цикл спора</h4>
-        <div className="flex flex-wrap gap-2">
-          {[
-            { state: "opened", color: "#F59E0B" },
-            { state: "investigating", color: "#6366F1" },
-            { state: "resolved_creator", color: "#2D9B6E" },
-            { state: "resolved_executor", color: "#2D9B6E" },
-            { state: "resolved_partial", color: "#F59E0B" },
-            { state: "closed", color: "#999" },
-          ].map((item, i) => (
-            <div key={item.state} className="flex items-center gap-2">
-              <span
-                className="px-3 py-1.5 rounded-lg text-xs font-mono border"
-                style={{
-                  backgroundColor: `${item.color}15`,
-                  borderColor: `${item.color}40`,
-                  color: item.color,
-                }}
-              >
-                {item.state}
-              </span>
-              {i < 5 && <span className="text-[#CCC]">→</span>}
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="mb-8 border-[#E63946]/30 bg-[#E63946]/5">
-        <h4 className="font-semibold text-[#E63946] mb-3">🚨 Блокировка сделки</h4>
-        <p className="text-sm text-[#444] mb-3">При открытии спора связанная сущность блокируется:</p>
-        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`// Блокируем сделку/задачу
-await tx.deal.update({
-  where: { id: dto.entityId },
-   { status: 'disputed' },
-});
-
-// Или для задачи
-await tx.task.update({
-  where: { id: dto.entityId },
-   { status: 'disputed' },
-});`}
-        </pre>
-      </Card>
-
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Распределение денег</h4>
-        <div className="grid md:grid-cols-3 gap-4">
-          <div className="border border-[#2D9B6E]/30 bg-[#2D9B6E]/5 rounded-lg p-4">
-            <h5 className="font-semibold text-[#2D9B6E] mb-2">В пользу креатора</h5>
-            <p className="text-xs text-[#444]">100% возврат креатору</p>
-            <p className="text-xs text-[#666] mt-1">Исполнитель: 0%</p>
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Шрифты</h4>
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="border border-[#E5E5E5] rounded-lg p-4">
+            <div className="text-3xl font-sans mb-2">Inter</div>
+            <div className="text-sm text-[#666]">Основной шрифт (body)</div>
           </div>
-          <div className="border border-[#6366F1]/30 bg-[#6366F1]/5 rounded-lg p-4">
-            <h5 className="font-semibold text-[#6366F1] mb-2">В пользу исполнителя</h5>
-            <p className="text-xs text-[#444]">100% выплата исполнителю</p>
-            <p className="text-xs text-[#666] mt-1">Креатор: 0%</p>
-          </div>
-          <div className="border border-[#F59E0B]/30 bg-[#F59E0B]/5 rounded-lg p-4">
-            <h5 className="font-semibold text-[#F59E0B] mb-2">Частичный возврат</h5>
-            <p className="text-xs text-[#444]">Распределение по %</p>
-            <p className="text-xs text-[#666] mt-1">Например: 50/50</p>
+          <div className="border border-[#E5E5E5] rounded-lg p-4">
+            <div className="text-3xl font-display mb-2">Space Grotesk</div>
+            <div className="text-sm text-[#666]">Заголовки (headings)</div>
           </div>
         </div>
       </Card>
 
-      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Интеграция с FinanceService</h4>
-        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`// Возврат креатору
-await this.financeService.refund({
-  userId: creatorId,
-  originalTransactionId: taskId,
-  amount: '1000.00',
-  description: 'Возврат по спору #disputeId',
-  idempotencyKey: uuidv4(),
-});
-
-// Выплата исполнителю
-await this.financeService.reward({
-  userId: executorId,
-  amount: '500.00',
-  description: 'Выплата по спору #disputeId',
-  idempotencyKey: uuidv4(),
-  relatedEntityType: 'task',
-  relatedEntityId: taskId,
-});`}
-        </pre>
-      </Card>
-    </div>
-  );
-}
-
-function AntiFraudSection() {
-  return (
-    <div>
-      <SectionHeader num="03" title="Антифрод" />
-      
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Типы сигналов</h4>
-        <div className="space-y-2">
-          {[
-            { type: "duplicate_device_fingerprint", desc: "Одинаковые устройства", severity: "high" },
-            { type: "duplicate_payout_requisites", desc: "Одинаковые реквизиты", severity: "critical" },
-            { type: "suspicious_fast_completion", desc: "Быстрое выполнение", severity: "medium" },
-            { type: "duplicate_proof_screenshots", desc: "Дубликаты скриншотов", severity: "high" },
-            { type: "sudden_audience_growth", desc: "Резкий рост аудитории", severity: "medium" },
-            { type: "unusual_activity_pattern", desc: "Необычные паттерны", severity: "low" },
-          ].map((item) => (
-            <div key={item.type} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
-              <code className="text-xs font-mono text-[#1A1A1A] flex-1">{item.type}</code>
-              <span className="text-xs text-[#666]">{item.desc}</span>
-              <span className={`px-2 py-1 rounded text-xs font-medium ${
-                item.severity === "critical" ? "bg-[#E63946]/10 text-[#E63946]" :
-                item.severity === "high" ? "bg-[#FF6B35]/10 text-[#FF6B35]" :
-                item.severity === "medium" ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
-                "bg-[#999]/10 text-[#999]"
-              }`}>
-                {item.severity}
-              </span>
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Компоненты</h4>
+        <div className="space-y-4">
+          <div>
+            <h5 className="text-sm font-semibold mb-2">Карточки</h5>
+            <div className="border border-[#E5E5E5] rounded-xl p-6 hover:border-[#1A1A1A]/20 transition-colors duration-200">
+              <div className="text-sm text-[#666] mb-2">Пример карточки</div>
+              <div className="text-lg font-semibold">Без box-shadow, border-radius: 12px</div>
             </div>
-          ))}
+          </div>
+
+          <div>
+            <h5 className="text-sm font-semibold mb-2">Кнопки</h5>
+            <div className="flex gap-3">
+              <button className="px-4 py-2 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#E55A2B] transition-colors duration-200">
+                Primary
+              </button>
+              <button className="px-4 py-2 bg-white border border-[#E5E5E5] text-[#1A1A1A] rounded-lg font-medium hover:border-[#1A1A1A]/40 transition-colors duration-200">
+                Secondary
+              </button>
+              <button className="px-4 py-2 bg-[#2D9B6E] text-white rounded-lg font-medium hover:bg-[#248058] transition-colors duration-200">
+                Success
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <h5 className="text-sm font-semibold mb-2">Бейджи</h5>
+            <div className="flex gap-2">
+              <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs rounded-lg font-medium">Success</span>
+              <span className="px-2 py-1 bg-[#E63946]/10 text-[#E63946] text-xs rounded-lg font-medium">Error</span>
+              <span className="px-2 py-1 bg-[#F59E0B]/10 text-[#F59E0B] text-xs rounded-lg font-medium">Warning</span>
+              <span className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] text-xs rounded-lg font-medium">Info</span>
+            </div>
+          </div>
         </div>
       </Card>
 
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Cron-задачи</h4>
-        <div className="space-y-2">
-          {[
-            { task: "check-duplicate-devices", schedule: "Каждые 6 часов" },
-            { task: "check-fast-completions", schedule: "Каждые 4 часа" },
-            { task: "check-duplicate-screenshots", schedule: "Каждые 8 часов" },
-            { task: "check-duplicate-requisites", schedule: "Раз в день" },
-          ].map((item) => (
-            <div key={item.task} className="flex items-center gap-3 border border-[#E5E5E5] rounded-lg p-3">
-              <code className="text-xs font-mono text-[#1A1A1A] flex-1">{item.task}</code>
-              <span className="text-xs text-[#666]">{item.schedule}</span>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Ручная проверка</h4>
-        <p className="text-sm text-[#444] mb-3">Сигналы не блокируют автоматически, а отправляются на ручную проверку модератором:</p>
-        <pre className="text-xs font-mono bg-white p-3 rounded-lg overflow-x-auto">
-{`// Создаём сигнал
-await this.createSignal({
-  type: 'duplicate_device_fingerprint',
-  userId,
-  severity: 'high',
-  title: 'Duplicate device fingerprint detected',
-  description: \`User \${userId} shares device...\`,
-  meta { userAgent, ip, relatedUserIds },
-});
-
-// Добавляем в очередь модерации
-await prisma.moderationQueue.create({
-   {
-    entityType: 'anti_fraud',
-    entityId: signal.id,
-    status: 'pending',
-    priority: 15,
-  },
-});`}
-        </pre>
-      </Card>
-    </div>
-  );
-}
-
-function VerificationSection() {
-  return (
-    <div>
-      <SectionHeader num="04" title="Повторная верификация" />
-      
-      <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Cron-задача</h4>
-        <p className="text-sm text-[#666] mb-4">Запускается раз в 30 дней (первый день каждого месяца):</p>
-        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`@Cron('0 0 1 * *') // Первый день каждого месяца
-async handleReverifyAmbassadors() {
-  // Получаем всех верифицированных амбассадоров
-  const ambassadors = await prisma.ambassadorProfile.findMany({
-    where: { isVerified: true },
-  });
-
-  for (const ambassador of ambassadors) {
-    // Проверяем активность за последние 60 дней
-    const lastTask = await prisma.task.findFirst({
-      where: {
-        ambassadorId: ambassador.userId,
-        status: 'paid',
-        updatedAt: {
-          gte: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-        },
-      },
-    });
-
-    if (!lastTask) {
-      // Создаем заявку на повторную верификацию
-      await prisma.ambassadorVerificationRequest.create({
-         {
-          ambassadorId: ambassador.id,
-          status: 'pending',
-        },
-      });
-    }
-  }
-}`}
-        </pre>
-      </Card>
-
-      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Логика проверки</h4>
+      <Card className="border-[#E63946]/30 bg-[#E63946]/5">
+        <h4 className="font-semibold text-[#E63946] mb-3">🚫 ЗАПРЕЩЕНО</h4>
         <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• Проверяется активность за последние 60 дней</li>
-          <li>• Если нет выполненных заданий — требуется повторная верификация</li>
-          <li>• Создаётся заявка в <code className="font-mono bg-white px-1.5 py-0.5 rounded">AmbassadorVerificationRequest</code></li>
-          <li>• Добавляется в очередь модерации</li>
-          <li>• Амбассадор получает уведомление</li>
+          <li>• ❌ Glass-morphism (blur)</li>
+          <li>• ❌ Градиенты на фонах</li>
+          <li>• ❌ Box-shadow на карточках</li>
+          <li>• ❌ Радиусы &gt; 16px</li>
+          <li>• ❌ Stock-фото</li>
+          <li>• ❌ Анимации &gt; 300ms</li>
         </ul>
       </Card>
     </div>
   );
 }
 
-function TestsSection() {
+function RolesSection() {
   return (
     <div>
-      <SectionHeader num="05" title="Тестирование" />
-      
+      <SectionHeader num="02" title="Переключение ролей" />
+      <p className="text-[#444] mb-8">Следует разделу 5 Конституции (Единый аккаунт).</p>
+
       <Card className="mb-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">E2E тесты</h4>
-        <pre className="text-sm font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`cd apps/api
-npm run test:e2e test/disputes.e2e-spec.ts`}
-        </pre>
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Как работает</h4>
+        <div className="space-y-4">
+          {[
+            { step: "1", desc: "Пользователь имеет массив ролей (creator, ambassador, owner)" },
+            { step: "2", desc: "RoleContext хранит текущую выбранную роль" },
+            { step: "3", desc: "RoleSwitcher в шапке показывает dropdown с доступными ролями" },
+            { step: "4", desc: "При переключении URL меняется на /creator/..., /ambassador/..., /owner/..." },
+            { step: "5", desc: "Навигация и дашборд перестраиваются под выбранную роль" },
+            { step: "6", desc: "Баланс остаётся единым для всех ролей" },
+          ].map((item) => (
+            <div key={item.step} className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-lg bg-[#FF6B35]/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[#FF6B35] font-bold">{item.step}</span>
+              </div>
+              <p className="text-sm text-[#444] pt-1">{item.desc}</p>
+            </div>
+          ))}
+        </div>
       </Card>
 
-      <div className="space-y-3 mb-8">
+      <div className="grid md:grid-cols-3 gap-4 mb-8">
         {[
-          { test: "Открытие спора", count: 2 },
-          { test: "Разрешение спора (полный возврат)", count: 2 },
-          { test: "Разрешение спора (частичный возврат)", count: 2 },
-          { test: "Контроль доступа", count: 2 },
-        ].map((item, i) => (
-          <div key={i} className="flex items-center justify-between border border-[#E5E5E5] rounded-xl p-4">
-            <span className="text-sm text-[#1A1A1A]">{item.test}</span>
-            <span className="text-xs font-mono text-[#999] bg-[#F5F5F0] px-2 py-1 rounded">{item.count} tests</span>
-          </div>
+          { role: "Креатор", icon: "🎨", color: "#FF6B35", desc: "Покупает рекламные места" },
+          { role: "Амбассадор", icon: "🚀", color: "#2D9B6E", desc: "Выполняет задания" },
+          { role: "Владелец", icon: "🏢", color: "#6366F1", desc: "Продаёт рекламные места" },
+        ].map((item) => (
+          <Card key={item.role}>
+            <div className="text-center">
+              <div className="text-4xl mb-3">{item.icon}</div>
+              <h4 className="font-display font-semibold text-[#1A1A1A] mb-2">{item.role}</h4>
+              <p className="text-sm text-[#666]">{item.desc}</p>
+            </div>
+          </Card>
         ))}
       </div>
 
       <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
-        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
-        <ul className="text-sm text-[#444] space-y-1.5">
-          <li>• E2E тест: открытие → решение → распределение денег</li>
-          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(api): moderation, disputes, anti-fraud</code></li>
-        </ul>
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Единый баланс</h4>
+        <p className="text-sm text-[#444]">
+          Баланс привязан к userId, а не к роли. Деньги от продаж и покупок копятся на одном счёте, независимо от выбранной роли.
+        </p>
+      </Card>
+    </div>
+  );
+}
+
+function PagesSection() {
+  return (
+    <div>
+      <SectionHeader num="03" title="Страницы по ролям" />
+      
+      <div className="space-y-8">
+        <Card>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🎨</span>
+            <h3 className="font-display font-semibold text-xl text-[#1A1A1A]">Креатор</h3>
+          </div>
+          <div className="space-y-2">
+            {[
+              { path: "/creator", desc: "Дашборд с балансом и статистикой" },
+              { path: "/creator/catalog", desc: "Каталог рекламных мест" },
+              { path: "/creator/deals", desc: "Мои сделки" },
+              { path: "/creator/balance", desc: "Баланс и транзакции" },
+            ].map((item) => (
+              <div key={item.path} className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-lg">
+                <code className="text-sm font-mono text-[#FF6B35] bg-[#FF6B35]/5 px-2 py-1 rounded">{item.path}</code>
+                <span className="text-sm text-[#666]">{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🚀</span>
+            <h3 className="font-display font-semibold text-xl text-[#1A1A1A]">Амбассадор</h3>
+          </div>
+          <div className="space-y-2">
+            {[
+              { path: "/ambassador", desc: "Дашборд с балансом и заданиями" },
+              { path: "/ambassador/tasks", desc: "Доступные задания" },
+              { path: "/ambassador/my-tasks", desc: "Мои задания" },
+              { path: "/ambassador/balance", desc: "Баланс и транзакции" },
+            ].map((item) => (
+              <div key={item.path} className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-lg">
+                <code className="text-sm font-mono text-[#2D9B6E] bg-[#2D9B6E]/5 px-2 py-1 rounded">{item.path}</code>
+                <span className="text-sm text-[#666]">{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-2xl">🏢</span>
+            <h3 className="font-display font-semibold text-xl text-[#1A1A1A]">Владелец</h3>
+          </div>
+          <div className="space-y-2">
+            {[
+              { path: "/owner", desc: "Дашборд с балансом и сделками" },
+              { path: "/owner/platforms", desc: "Мои площадки" },
+              { path: "/owner/slots", desc: "Рекламные места" },
+              { path: "/owner/deals", desc: "Сделки" },
+              { path: "/owner/balance", desc: "Баланс и транзакции" },
+            ].map((item) => (
+              <div key={item.path} className="flex items-center gap-3 p-3 border border-[#E5E5E5] rounded-lg">
+                <code className="text-sm font-mono text-[#6366F1] bg-[#6366F1]/5 px-2 py-1 rounded">{item.path}</code>
+                <span className="text-sm text-[#666]">{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
+function CatalogSection() {
+  return (
+    <div>
+      <SectionHeader num="04" title="Единый маркетплейс" />
+      <p className="text-[#444] mb-8">Каталог рекламных мест на странице /creator/catalog.</p>
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-4">Фильтры</h4>
+        <div className="grid md:grid-cols-4 gap-4">
+          <div>
+            <label className="text-sm text-[#666] mb-2 block">Платформа</label>
+            <select className="w-full px-3 py-2 border border-[#E5E5E5] rounded-lg text-sm">
+              <option>Все</option>
+              <option>Telegram</option>
+              <option>Instagram</option>
+              <option>YouTube</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm text-[#666] mb-2 block">Мин. цена</label>
+            <input type="number" className="w-full px-3 py-2 border border-[#E5E5E5] rounded-lg text-sm" placeholder="0" />
+          </div>
+          <div>
+            <label className="text-sm text-[#666] mb-2 block">Макс. цена</label>
+            <input type="number" className="w-full px-3 py-2 border border-[#E5E5E5] rounded-lg text-sm" placeholder="100000" />
+          </div>
+          <div>
+            <label className="text-sm text-[#666] mb-2 block">Формат</label>
+            <select className="w-full px-3 py-2 border border-[#E5E5E5] rounded-lg text-sm">
+              <option>Все</option>
+              <option>Пост</option>
+              <option>Сторис</option>
+              <option>Reels</option>
+            </select>
+          </div>
+        </div>
       </Card>
 
-      <Card className="mt-8">
-        <h4 className="font-semibold text-[#1A1A1A] mb-3">Тест распределения денег</h4>
-        <pre className="text-xs font-mono bg-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
-{`it('Should resolve dispute with partial refund', async () => {
-  // Открываем спор
-  const openResponse = await request(app.getHttpServer())
-    .post('/api/v1/disputes')
-    .send({
-      entityType: 'task',
-      entityId: taskId,
-      reason: 'Partial completion',
-    })
-    .expect(201);
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <div className="mb-3">
+            <span className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] text-xs rounded-lg font-medium">Telegram</span>
+            <span className="text-sm text-[#666] ml-2">50,000 подписчиков</span>
+          </div>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-2">Пост в канале о технологиях</h4>
+          <p className="text-sm text-[#666] mb-4">Размещение поста в канале с аудиторией 50к</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-2xl font-bold">5,000 ₽</div>
+              <div className="text-xs text-[#666]">за день</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-[#666]">Формат</div>
+              <div className="font-medium">Пост</div>
+            </div>
+          </div>
+          <button className="btn btn-primary w-full">Забронировать</button>
+        </Card>
 
-  // Разрешаем с частичным возвратом 50%
-  const resolveResponse = await request(app.getHttpServer())
-    .post(\`/api/v1/disputes/\${disputeId}/resolve\`)
-    .send({
-      resolution: 'partial_refund',
-      refundPercentage: 50,
-      comment: 'Task partially completed',
-    })
-    .expect(200);
+        <Card>
+          <div className="mb-3 px-3 py-1 bg-[#FF6B35]/10 text-[#FF6B35] text-xs rounded-lg font-medium inline-block">
+            Ваше место
+          </div>
+          <div className="mb-3">
+            <span className="px-2 py-1 bg-[#6366F1]/10 text-[#6366F1] text-xs rounded-lg font-medium">Instagram</span>
+            <span className="text-sm text-[#666] ml-2">100,000 подписчиков</span>
+          </div>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-2">Сторис в профиле</h4>
+          <p className="text-sm text-[#666] mb-4">Размещение сторис в профиле</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="text-2xl font-bold">3,000 ₽</div>
+              <div className="text-xs text-[#666]">за день</div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-[#666]">Формат</div>
+              <div className="font-medium">Сторис</div>
+            </div>
+          </div>
+          <button className="btn btn-secondary w-full" disabled>Нельзя купить у себя</button>
+        </Card>
+      </div>
 
-  expect(resolveResponse.body.distribution.creatorRefund).toBe(500);
-  expect(resolveResponse.body.distribution.executorPayout).toBe(500);
-});`}
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Защита от самопокупки</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Бэкенд исключает собственные слоты из выдачи</li>
+          <li>• Фронтенд отображает бейдж "Ваше место", если бэкенд вернёт <code className="font-mono bg-white px-1.5 py-0.5 rounded">isOwn: true</code></li>
+          <li>• Кнопка "Забронировать" отключена для собственных слотов</li>
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
+function TechSection() {
+  return (
+    <div>
+      <SectionHeader num="05" title="Технологии" />
+      
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        <Card>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Основные</h4>
+          <div className="space-y-2">
+            {[
+              { name: "Next.js 14+", desc: "React фреймворк с App Router" },
+              { name: "React 18", desc: "UI библиотека" },
+              { name: "TypeScript", desc: "Типизация" },
+              { name: "Tailwind CSS", desc: "Утилитарные стили" },
+            ].map((item) => (
+              <div key={item.name} className="flex items-center gap-3">
+                <code className="text-sm font-mono text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded min-w-[120px]">{item.name}</code>
+                <span className="text-sm text-[#666]">{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card>
+          <h4 className="font-display font-semibold text-[#1A1A1A] mb-3">Дополнительные</h4>
+          <div className="space-y-2">
+            {[
+              { name: "React Hook Form", desc: "Управление формами" },
+              { name: "Zod", desc: "Валидация схем" },
+              { name: "TanStack Query", desc: "Серверное состояние" },
+            ].map((item) => (
+              <div key={item.name} className="flex items-center gap-3">
+                <code className="text-sm font-mono text-[#1A1A1A] bg-[#F5F5F0] px-2 py-1 rounded min-w-[120px]">{item.name}</code>
+                <span className="text-sm text-[#666]">{item.desc}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Пример формы с валидацией</h4>
+        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema, LoginInput } from '@/lib/schemas';
+
+const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
+  resolver: zodResolver(loginSchema),
+});
+
+const onSubmit = (data: LoginInput) => {
+  // Отправка данных
+};`}
         </pre>
+      </Card>
+
+      <Card className="mb-8">
+        <h4 className="font-semibold text-[#1A1A1A] mb-3">Пример TanStack Query</h4>
+        <pre className="text-xs font-mono bg-[#1A1A1A] text-[#F5F5F0] p-4 rounded-lg overflow-x-auto">
+{`import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+
+const { data: balance, isLoading } = useQuery({
+  queryKey: ['balance'],
+  queryFn: () => api.getBalance(),
+});
+
+if (isLoading) return <Skeleton />;`}
+        </pre>
+      </Card>
+
+      <Card className="border-[#2D9B6E]/30 bg-[#2D9B6E]/5">
+        <h4 className="font-semibold text-[#2D9B6E] mb-3">✓ Критерии приёмки</h4>
+        <ul className="text-sm text-[#444] space-y-1.5">
+          <li>• Пользователь с ролями Creator и Owner может переключиться в один клик</li>
+          <li>• При переключении меняется интерфейс и URL</li>
+          <li>• В режиме Creator виден каталог с возможностью бронирования</li>
+          <li>• Дизайн соответствует разделу 6 Конституции</li>
+          <li>• Коммит: <code className="font-mono bg-white px-1.5 py-0.5 rounded">feat(web): design system, role switching and unified marketplace UI</code></li>
+        </ul>
       </Card>
     </div>
   );
@@ -499,11 +526,11 @@ npm run test:e2e test/disputes.e2e-spec.ts`}
 
 const sectionComponents: Record<string, React.FC> = {
   overview: OverviewSection,
-  moderation: ModerationSection,
-  disputes: DisputesSection,
-  "anti-fraud": AntiFraudSection,
-  verification: VerificationSection,
-  tests: TestsSection,
+  design: DesignSection,
+  roles: RolesSection,
+  pages: PagesSection,
+  catalog: CatalogSection,
+  tech: TechSection,
 };
 
 export default function App() {
@@ -523,7 +550,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="font-bold text-[#1A1A1A] text-sm" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>KURUTA</h1>
-              <p className="text-[10px] text-[#999] uppercase tracking-wider">Moderation & Disputes</p>
+              <p className="text-[10px] text-[#999] uppercase tracking-wider">Frontend</p>
             </div>
           </div>
 
@@ -541,8 +568,8 @@ export default function App() {
           </button>
 
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs text-[#999] font-mono">Anti-Fraud + Disputes</span>
-            <span className="px-2 py-1 bg-[#E63946]/10 text-[#E63946] text-xs font-medium rounded-md">CRITICAL</span>
+            <span className="text-xs text-[#999] font-mono">Next.js 14+ Design System</span>
+            <span className="px-2 py-1 bg-[#2D9B6E]/10 text-[#2D9B6E] text-xs font-medium rounded-md">READY</span>
           </div>
         </div>
       </header>
